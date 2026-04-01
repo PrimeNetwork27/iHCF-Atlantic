@@ -79,27 +79,9 @@
         <dependency>
             <groupId>com.sk89q</groupId>
             <artifactId>worldedit</artifactId>
-            <version>5.7-SNAPSHOT</version>
+            <version>6.1-SNAPSHOT</version>
             <scope>system</scope>
-            <systemPath>${basedir}/deps/WorldEdit.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>me.activated.aquacore</groupId>
-            <artifactId>AquaCoreAPI</artifactId>
-            <version>1.0-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/deps/AquaCoreAPI.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.github.paperspigot</groupId>
-            <artifactId>paperspigot-api</artifactId>
-            <version>1.7.10-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.lunarclient</groupId>
-            <artifactId>bukkitapi</artifactId>
-            <version>1.0-20200729.212152-7</version>
+            <systemPath>${basedir}/lib/WorldEdit.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -135,9 +117,9 @@
         <dependency>
             <groupId>org.github.paperspigot</groupId>
             <artifactId>paperspigot</artifactId>
-            <version>1.7.10-R0.1-SNAPSHOT</version>
+            <version>1.8.9-R0.3-SNAPSHOT</version>
             <scope>system</scope>
-            <systemPath>${basedir}/deps/exospigot.jar</systemPath>
+            <systemPath>${basedir}/lib/wspigot.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -150,7 +132,7 @@
             <artifactId>ProtocolLib</artifactId>
             <version>3.7.0</version>
             <scope>system</scope>
-            <systemPath>${basedir}/deps/ProtocolLib.jar</systemPath>
+            <systemPath>${basedir}/lib/ProtocolLib.jar</systemPath>
         </dependency>
     </dependencies>
 
