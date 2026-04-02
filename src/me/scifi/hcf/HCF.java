@@ -25,10 +25,8 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
 import io.github.nosequel.tab.shared.TabHandler;
 import lombok.Getter;
-import me.scifi.hcf.abilities.command.AbilityCommand;
-import me.scifi.hcf.abilities.listeners.BelchbombListener;
-import me.scifi.hcf.abilities.listeners.GrapplingHookListener;
-import me.scifi.hcf.abilities.listeners.SnowportListener;
+import me.scifi.hcf.abilities.Ability;
+import me.scifi.hcf.abilities.AbilityCommand;
 import me.scifi.hcf.combatlog.CombatLogListener;
 import me.scifi.hcf.command.AlertCommand;
 import me.scifi.hcf.command.AngleCommand;
@@ -155,6 +153,7 @@ import me.scifi.hcf.sotw.SotwListener;
 import me.scifi.hcf.sotw.SotwTimer;
 import me.scifi.hcf.staffmode.StaffModeCommand;
 import me.scifi.hcf.staffmode.StaffModeListener;
+import me.scifi.hcf.staffmode.StaffModeManager;
 import me.scifi.hcf.tablist.GameTabProvider;
 import me.scifi.hcf.timer.TimerExecutor;
 import me.scifi.hcf.user.FactionUser;
@@ -186,6 +185,7 @@ public class HCF extends JavaPlugin {
 	private Rank rank;
 	private ManagerHandler managerHandler;
 	private LunarAPI lunarAPI;
+	private StaffModeManager staffModeManager;
 
 	// Intellij shat itself so this is here
 	public static Collection<? extends Player> getOnlinePlayers() {
@@ -220,6 +220,7 @@ public class HCF extends JavaPlugin {
 		assemble.setAssembleStyle(AssembleStyle.KOHI);
 		lunarAPI = new LunarAPI();
 		lunarAPI.init();
+		staffModeManager = new StaffModeManager();
 		new BukkitRunnable() {
 			@Override
 			public void run() {
@@ -319,10 +320,8 @@ public class HCF extends JavaPlugin {
 		manager.registerEvents(new KitSignListener(this), this);
 		manager.registerEvents(new ElevatorListener(), this);
 		manager.registerEvents(new InspectionListener(), this);
-		manager.registerEvents(new SnowportListener(), this);
-		manager.registerEvents(new BelchbombListener(), this);
-		manager.registerEvents(new GrapplingHookListener(), this);
 		manager.registerEvents(new PunishListener(), this);
+		Ability.load();
 	}
 
 	private void registerCommands() {
@@ -385,8 +384,8 @@ public class HCF extends JavaPlugin {
 		getCommand("rename").setExecutor(new RenameCommand(this));
 		getCommand("customtimer").setExecutor(new CustomTimerCommand(this));
 		getCommand("top").setExecutor(new TopCommand(this));
-		getCommand("broadcast").setExecutor(new BroadcastCommand());
 		getCommand("ability").setExecutor(new AbilityCommand());
+		getCommand("broadcast").setExecutor(new BroadcastCommand());
 		Map<String, Map<String, Object>> map = getDescription().getCommands();
 		for (Map.Entry<String, Map<String, Object>> entry : map.entrySet()) {
 			PluginCommand command = getCommand(entry.getKey());

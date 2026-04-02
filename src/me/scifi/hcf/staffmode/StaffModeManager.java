@@ -1,17 +1,59 @@
 package me.scifi.hcf.staffmode;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import lombok.Getter;
 import me.scifi.hcf.HCF;
 import me.scifi.hcf.Utils;
 
-public class StaffModeItems {
+@Getter
+public final class StaffModeManager { // Class created to avoid the static abuse.
 
-	public static void giveModItems(Player p) {
+	private final Set<UUID> staffMode = new HashSet<>();
+
+	private final Map<UUID, ItemStack[]> armorContents = new HashMap<>();
+
+	private final Map<UUID, ItemStack[]> inventoryContents = new HashMap<>();
+
+	public void putInStaffMode(final Player p) {
+		p.setGameMode(GameMode.CREATIVE);
+		staffMode.add(p.getUniqueId());
+		armorContents.put(p.getUniqueId(), p.getInventory().getArmorContents());
+		inventoryContents.put(p.getUniqueId(), p.getInventory().getContents());
+		p.getInventory().setArmorContents(null);
+		p.getInventory().clear();
+		giveModItems(p);
+		p.setHealth(20);
+		p.setFoodLevel(20);
+		Vanish.setVanished(p);
+	}
+
+	public void removeFromStaffMode(final Player p) {
+		staffMode.remove(p.getUniqueId());
+		p.getInventory().clear();
+		p.getInventory().setArmorContents(null);
+		p.setGameMode(GameMode.SURVIVAL);
+		p.setFoodLevel(20);
+		p.setHealth(20);
+		p.getInventory().setArmorContents(armorContents.get(p.getUniqueId()));
+		p.getInventory().setContents(inventoryContents.get(p.getUniqueId()));
+		armorContents.remove(p.getUniqueId());
+		inventoryContents.remove(p.getUniqueId());
+		Vanish.disableVanish(p);
+	}
+
+	public void giveModItems(final Player p) {
 		ItemStack book = new ItemStack(Material.BOOK);
 		ItemStack compass = new ItemStack(Material.COMPASS);
 		ItemStack ice = new ItemStack(Material.ICE);

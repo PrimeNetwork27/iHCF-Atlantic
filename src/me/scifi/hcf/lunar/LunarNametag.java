@@ -16,6 +16,7 @@ import me.scifi.hcf.ConfigurationService;
 import me.scifi.hcf.HCF;
 import me.scifi.hcf.faction.FactionManager;
 import me.scifi.hcf.faction.type.PlayerFaction;
+import me.scifi.hcf.staffmode.Vanish;
 
 public class LunarNametag implements Runnable {
 
@@ -30,7 +31,7 @@ public class LunarNametag implements Runnable {
 		}
 	}
 
-	public int getFactionRank(PlayerFaction target) {
+	public String getFactionRank(PlayerFaction target) {
 		List<PlayerFaction> list = HCF.getPlugin().getManagerHandler().getFactionManager().getFactions().stream()
 				.filter(f -> f instanceof PlayerFaction).map(f -> (PlayerFaction) f)
 				.sorted(Comparator.comparingLong(PlayerFaction::getPoints).reversed()).collect(Collectors.toList());
@@ -39,11 +40,24 @@ public class LunarNametag implements Runnable {
 			PlayerFaction faction = list.get(i);
 
 			if (faction.equals(target)) {
-				return i;
+				return String.valueOf(i + 1);
 			}
 		}
 
-		return -1;
+		return "";
+	}
+
+	public String getFormattedRank(String string) {
+		if (string.equalsIgnoreCase("1")) {
+			return "&4①";
+		}
+		if (string.equalsIgnoreCase("2")) {
+			return "&6②";
+		}
+		if (string.equalsIgnoreCase("3")) {
+			return "&a③";
+		}
+		return "&a" + string;
 	}
 
 	private void updateNametags(Player viewer, Player target) {
@@ -59,12 +73,20 @@ public class LunarNametag implements Runnable {
 			coloredNames.add(color + target.getName());
 
 			if (targetFaction != null) {
-				String factionTag = "#" + getFactionRank(targetFaction) + ChatColor.GOLD + " ["
+				String factionTag = "#" + getFormattedRank(getFactionRank(targetFaction)) + ChatColor.GOLD + " ["
 						+ getFormattedFactionName(targetFaction, viewer) + " "
 						+ JavaUtils.format(targetFaction.getDeathsUntilRaidable(false))
 						+ targetFaction.getRegenStatus().getSymbol() + ChatColor.GOLD + "]";
 				coloredNames.add(factionTag);
 			}
+			if (plugin.getStaffModeManager().getStaffMode().contains(target.getUniqueId())) {
+				if (Vanish.isPlayerVanished(target)) {
+					coloredNames.add(CC.translate("&e* [&7&oStaff&e-&7&oMode&e]"));
+				} else {
+					coloredNames.add(CC.translate("&e[&7&oStaff&e-&7&oMode&e]"));
+				}
+			}
+
 			if (plugin.getRank().getGroupPrefix(viewer) != null) {
 				coloredNames.add(CC.translate(plugin.getRank().getGroupPrefix(target)));
 			}

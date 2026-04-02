@@ -33,7 +33,6 @@ import me.scifi.hcf.pvpclass.archer.ArcherMark;
 import me.scifi.hcf.pvpclass.bard.BardClass;
 import me.scifi.hcf.sotw.SotwCommand;
 import me.scifi.hcf.sotw.SotwTimer;
-import me.scifi.hcf.staffmode.StaffModeCommand;
 import me.scifi.hcf.staffmode.Vanish;
 import me.scifi.hcf.timer.PlayerTimer;
 import me.scifi.hcf.timer.Timer;
@@ -127,7 +126,7 @@ public class Adapter implements AssembleAdapter {
 			lines.add(" &7\u00BB &3Coords&7: &f" + x + " , " + z);
 		}
 
-		if (StaffModeCommand.staffMode.contains(player.getUniqueId())) {
+		if (HCF.getPlugin().getStaffModeManager().getStaffMode().contains(player.getUniqueId())) {
 			DecimalFormat decimalFormat = new DecimalFormat("##.00");
 			lines.add("&3&lStaff Mode&7:");
 			if (Vanish.isPlayerVanished(player)) {

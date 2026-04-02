@@ -42,7 +42,7 @@ public class ItemBuilder {
 		if (this.meta == null) {
 			this.meta = this.stack.getItemMeta();
 		}
-		this.meta.setDisplayName(name);
+		this.meta.setDisplayName(CC.translate(name));
 		return this;
 	}
 
@@ -53,7 +53,7 @@ public class ItemBuilder {
 		final boolean hasLore = this.meta.hasLore();
 		final List<String> lore = hasLore ? this.meta.getLore() : new ArrayList<String>();
 		lore.add(hasLore ? lore.size() : 0, line);
-		this.lore(line);
+		this.lore(CC.translate(line));
 		return this;
 	}
 

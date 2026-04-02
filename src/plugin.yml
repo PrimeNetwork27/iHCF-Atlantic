@@ -1,11 +1,13 @@
 name: Atlantic
-version: ${version}
+version: 1.0
 description: Fundemental HCF Core
 authors: [Scifi, DaddyImPregnant]
 main: me.scifi.hcf.HCF
 depend: [Apollo-Bukkit]
 softdepend: [ProtocolLib,Vault,WorldEdit]
 commands:
+  ability:
+    description: Command used to handle abilitys.
   angle:
     description: Check your yaw and pitch position.
   conquest:

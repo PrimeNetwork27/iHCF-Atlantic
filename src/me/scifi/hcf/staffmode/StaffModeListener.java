@@ -22,6 +22,7 @@ import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
@@ -42,7 +43,7 @@ public class StaffModeListener implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onBlockPlace(BlockPlaceEvent e) {
 		Player p = e.getPlayer();
-		if (StaffModeCommand.staffMode.contains(p.getUniqueId())) {
+		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
 			p.sendMessage(Utils.chat(plugin.getMessagesYML().getString("STAFFMODE-BLOCK-PLACE")));
 			e.setCancelled(true);
 		}
@@ -59,7 +60,7 @@ public class StaffModeListener implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onBlockBreak(BlockBreakEvent e) {
 		Player p = e.getPlayer();
-		if (StaffModeCommand.staffMode.contains(p.getUniqueId())) {
+		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
 			p.sendMessage(Utils.chat(plugin.getMessagesYML().getString("STAFFMODE-BLOCK-BREAK")));
 			e.setCancelled(true);
 		}
@@ -76,7 +77,7 @@ public class StaffModeListener implements Listener {
 	public void onEntityDamage(EntityDamageEvent e) {
 		if (e.getEntity() instanceof Player) {
 			Player p = (Player) e.getEntity();
-			if (StaffModeCommand.staffMode.contains(p.getUniqueId())) {
+			if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
 				e.setCancelled(true);
 			}
 
@@ -90,7 +91,7 @@ public class StaffModeListener implements Listener {
 	public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
 		if (e.getDamager() instanceof Player) {
 			Player damager = (Player) e.getDamager();
-			if (StaffModeCommand.staffMode.contains(damager.getUniqueId())) {
+			if (plugin.getStaffModeManager().getStaffMode().contains(damager.getUniqueId())) {
 				e.setCancelled(true);
 
 				if (Vanish.isPlayerVanished(damager)) {
@@ -101,11 +102,20 @@ public class StaffModeListener implements Listener {
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
+	public void onJoin(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
+		if (player.hasPermission("hcf.command.staffmode")) {
+			plugin.getStaffModeManager().putInStaffMode(player);
+		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR)
 	public void onInteract(PlayerInteractEvent e) {
 		Player p = e.getPlayer();
 		if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			if (StaffModeCommand.staffMode.contains(p.getUniqueId()) && e.getItem() != null && e.getItem().hasItemMeta()
-					&& e.getItem().getItemMeta().hasDisplayName() && e.getItem().getItemMeta().getDisplayName().equals(
+			if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId()) && e.getItem() != null
+					&& e.getItem().hasItemMeta() && e.getItem().getItemMeta().hasDisplayName()
+					&& e.getItem().getItemMeta().getDisplayName().equals(
 							Utils.chat(plugin.getMessagesYML().getString("STAFFMODE.VANISHITEM.NAME.ENABLED")))) {
 				Vanish.disableVanish(p);
 				ItemStack dye = new ItemStack(Material.INK_SACK, 1, (short) 8);
@@ -119,7 +129,7 @@ public class StaffModeListener implements Listener {
 				dyeMeta.setLore(lore);
 				dye.setItemMeta(dyeMeta);
 				p.getInventory().setItemInHand(dye);
-			} else if (StaffModeCommand.staffMode.contains(p.getUniqueId()) && e.getItem() != null
+			} else if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId()) && e.getItem() != null
 					&& e.getItem().getItemMeta().getDisplayName().equals(
 							Utils.chat(plugin.getMessagesYML().getString("STAFFMODE.VANISHITEM.NAME.DISABLED")))) {
 				Vanish.setVanished(p);
@@ -190,13 +200,14 @@ public class StaffModeListener implements Listener {
 			ice.setItemMeta(iceMeta);
 			if (p.getInventory().getItemInHand().getType() == Material.ICE) {
 				if (p.getInventory().getItemInHand().getItemMeta().equals(ice.getItemMeta())) {
-					if (StaffModeCommand.staffMode.contains(p.getUniqueId()) && p.hasPermission("hcf.command.freeze")) {
+					if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())
+							&& p.hasPermission("hcf.command.freeze")) {
 						if (rightClicked != null) {
 							Bukkit.getServer().dispatchCommand(p, "freeze " + rightClicked.getName());
 						}
 					}
 				}
-			} else if (StaffModeCommand.staffMode.contains(p.getUniqueId())
+			} else if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())
 					&& p.getInventory().getItemInHand().getType() == Material.BOOK
 					&& p.getInventory().getItemInHand().getItemMeta().equals(bookMeta)) {
 				Inventories.staffInventoryInspector(p, rightClicked);
@@ -208,7 +219,7 @@ public class StaffModeListener implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onDrop(PlayerDropItemEvent e) {
 		Player p = e.getPlayer();
-		if (StaffModeCommand.staffMode.contains(p.getUniqueId())) {
+		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
 			e.setCancelled(true);
 		}
 	}
@@ -216,7 +227,7 @@ public class StaffModeListener implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPickup(PlayerPickupItemEvent e) {
 		Player p = e.getPlayer();
-		if (StaffModeCommand.staffMode.contains(p.getUniqueId())) {
+		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
 			e.setCancelled(true);
 		}
 	}
@@ -224,8 +235,8 @@ public class StaffModeListener implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onDisconnect(PlayerQuitEvent e) {
 		Player p = e.getPlayer();
-		if (StaffModeCommand.staffMode.contains(p.getUniqueId())) {
-			StaffModeCommand.removeFromStaffMode(p);
+		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
+			plugin.getStaffModeManager().removeFromStaffMode(p);
 		}
 	}
 
@@ -241,7 +252,7 @@ public class StaffModeListener implements Listener {
 	@EventHandler
 	public void onGameModeChange(PlayerGameModeChangeEvent e) {
 		Player p = e.getPlayer();
-		if (StaffModeCommand.staffMode.contains(p.getUniqueId())) {
+		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
 			p.sendMessage(Utils.chat(plugin.getMessagesYML().getString("STAFFMODE-GAMEMODE-SWITCH")));
 			p.setGameMode(GameMode.CREATIVE);
 			e.setCancelled(true);
@@ -251,7 +262,7 @@ public class StaffModeListener implements Listener {
 	@EventHandler
 	public void onInventoryInteract(InventoryClickEvent e) {
 		Player p = (Player) e.getWhoClicked();
-		if (StaffModeCommand.staffMode.contains(p.getUniqueId())) {
+		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
 			e.setCancelled(true);
 		}
 	}
