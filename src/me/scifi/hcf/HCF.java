@@ -140,6 +140,7 @@ import me.scifi.hcf.listener.fixes.InfinityArrowFixListener;
 import me.scifi.hcf.listener.fixes.PearlGlitchListener;
 import me.scifi.hcf.listener.fixes.PotionLimitListener;
 import me.scifi.hcf.listener.fixes.VoidGlitchFixListener;
+import me.scifi.hcf.lunar.LunarAPI;
 import me.scifi.hcf.managers.IManager;
 import me.scifi.hcf.managers.ManagerHandler;
 import me.scifi.hcf.pvpclass.bard.EffectRestorer;
@@ -184,6 +185,7 @@ public class HCF extends JavaPlugin {
 	private Cooldown report = new Cooldown();
 	private Rank rank;
 	private ManagerHandler managerHandler;
+	private LunarAPI lunarAPI;
 
 	// Intellij shat itself so this is here
 	public static Collection<? extends Player> getOnlinePlayers() {
@@ -216,7 +218,8 @@ public class HCF extends JavaPlugin {
 		Assemble assemble = new Assemble(this, new Adapter());
 		assemble.setTicks(2);
 		assemble.setAssembleStyle(AssembleStyle.KOHI);
-
+		lunarAPI = new LunarAPI();
+		lunarAPI.init();
 		new BukkitRunnable() {
 			@Override
 			public void run() {

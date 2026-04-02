@@ -3,6 +3,7 @@ version: ${version}
 description: Fundemental HCF Core
 authors: [Scifi, DaddyImPregnant]
 main: me.scifi.hcf.HCF
+depend: [Apollo-Bukkit]
 softdepend: [ProtocolLib,Vault,WorldEdit]
 commands:
   angle:

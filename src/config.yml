@@ -14,6 +14,7 @@ kit-map: true
 kit-map-stats-in-spawn-only: false
 prevent-ally-damage: true
 core-enderpearls: true
+server-name: "&cMadagascar"
 exp-multiplier:
   global: 2.0
   fishing: 2.0

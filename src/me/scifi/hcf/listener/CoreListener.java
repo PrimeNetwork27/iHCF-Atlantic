@@ -85,17 +85,6 @@ public class CoreListener implements Listener {
 
 	}
 
-	@EventHandler(priority = EventPriority.HIGH)
-	public void onCombatPlace(BlockPlaceEvent e) {
-		Player p = e.getPlayer();
-		if (!plugin.getConfig().getBoolean("combat-place")) {
-			if (plugin.getManagerHandler().getTimerManager().getCombatTimer().getRemaining(p) > 0) {
-				p.sendMessage(Utils.chat(plugin.getMessagesYML().getString("COMBAT-PLACE-DISABLED")));
-				e.setCancelled(true);
-			}
-		}
-	}
-
 	@EventHandler(priority = EventPriority.HIGHEST)
 	public void onWeatherChange(WeatherChangeEvent e) {
 		boolean isRaining = e.toWeatherState();

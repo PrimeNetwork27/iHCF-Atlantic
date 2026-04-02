@@ -51,8 +51,6 @@ public class DeathListener implements Listener {
 		}
 	}
 
-	private static final long BASE_REGEN_DELAY = TimeUnit.MINUTES.toMillis(40L);
-
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player player = event.getEntity();
@@ -77,29 +75,19 @@ public class DeathListener implements Listener {
 
 		if (playerFaction != null) {
 			playerFaction.setPoints(playerFaction.getPoints() - 1);
-			if (plugin.getConfig().getBoolean("kit-map")) {
-				Faction factionAt = plugin.getManagerHandler().getFactionManager().getFactionAt(player.getLocation());
-				double newDtr = playerFaction.setDeathsUntilRaidable(playerFaction.getMaximumDeathsUntilRaidable());
 
-				Role role = playerFaction.getMember(player.getUniqueId()).getRole();
-				playerFaction.setRemainingRegenerationTime(TimeUnit.MINUTES.toMillis(1L));
-				playerFaction.broadcast(ChatColor.GOLD + "Member Death: " + ConfigurationService.TEAMMATE_COLOUR
-						+ role.getAstrix() + player.getName() + ChatColor.GOLD + ". " + "DTR: (" + ChatColor.WHITE
-						+ JavaUtils.format(newDtr, 2) + '/'
-						+ JavaUtils.format(playerFaction.getMaximumDeathsUntilRaidable(), 2) + ChatColor.GOLD + ").");
-			} else {
-				Faction factionAt = plugin.getManagerHandler().getFactionManager().getFactionAt(player.getLocation());
-				double dtrLoss = (1.0D * factionAt.getDtrLossMultiplier());
-				double newDtr = playerFaction.setDeathsUntilRaidable(playerFaction.getDeathsUntilRaidable() - dtrLoss);
+			Faction factionAt = plugin.getManagerHandler().getFactionManager().getFactionAt(player.getLocation());
+			double dtrLoss = (1.0D * factionAt.getDtrLossMultiplier());
+			double newDtr = playerFaction.setDeathsUntilRaidable(playerFaction.getDeathsUntilRaidable() - dtrLoss);
 
-				Role role = playerFaction.getMember(player.getUniqueId()).getRole();
-				playerFaction.setRemainingRegenerationTime(
-						TimeUnit.SECONDS.toMillis(plugin.getConfig().getLong("HCF-DTR-REGEN-TIME")));
-				playerFaction.broadcast(ChatColor.GOLD + "Member Death: " + ConfigurationService.TEAMMATE_COLOUR
-						+ role.getAstrix() + player.getName() + ChatColor.GOLD + ". " + "DTR: (" + ChatColor.WHITE
-						+ JavaUtils.format(newDtr, 2) + '/'
-						+ JavaUtils.format(playerFaction.getMaximumDeathsUntilRaidable(), 2) + ChatColor.GOLD + ").");
-			}
+			Role role = playerFaction.getMember(player.getUniqueId()).getRole();
+			playerFaction.setRemainingRegenerationTime(
+					TimeUnit.SECONDS.toMillis(plugin.getConfig().getLong("HCF-DTR-REGEN-TIME")));
+			playerFaction.broadcast(ChatColor.GOLD + "Member Death: " + ConfigurationService.TEAMMATE_COLOUR
+					+ role.getAstrix() + player.getName() + ChatColor.GOLD + ". " + "DTR: (" + ChatColor.WHITE
+					+ JavaUtils.format(newDtr, 2) + '/'
+					+ JavaUtils.format(playerFaction.getMaximumDeathsUntilRaidable(), 2) + ChatColor.GOLD + ").");
+
 		}
 
 		if (MinecraftServer.getServer().recentTps[0] > 15) { // Prevent unnecessary lag during prime times.

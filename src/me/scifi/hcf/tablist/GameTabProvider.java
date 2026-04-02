@@ -134,7 +134,7 @@ public class GameTabProvider implements TabElementHandler {
 		// ==============================
 		// Column 1 - Faction Members
 		// ==============================
-		element.add(1, 0, CC.translate(Bukkit.getServerName()));
+		element.add(1, 0, CC.translate(HCF.getPlugin().getConfig().getString("server-name")));
 		element.add(1, 2, CC.translate(playerFaction == null ? "" : ("&2" + playerFaction.getName())));
 
 		if (playerFaction != null) {

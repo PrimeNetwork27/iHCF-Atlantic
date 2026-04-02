@@ -23,5 +23,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="C:/Users/sezaz/OneDrive/Documentos/projects/iHCF-Atlantic/lib/Vault.jar"/>
+	<classpathentry kind="lib" path="C:/Users/sezaz/OneDrive/Documentos/HCG/server/plugins2/apollo-bukkit-1.2.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/sezaz/OneDrive/Documentos/projects/iHCF-Atlantic/lib/apollo-api-1.1.8.jar"/>
+	<classpathentry kind="lib" path="C:/Users/sezaz/OneDrive/Documentos/projects/iHCF-Atlantic/lib/adventure-api-4.26.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
