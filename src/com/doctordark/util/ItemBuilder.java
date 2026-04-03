@@ -65,6 +65,14 @@ public class ItemBuilder {
 		return this;
 	}
 
+	public ItemBuilder lore(final List<String> lore) {
+		if (this.meta == null) {
+			this.meta = this.stack.getItemMeta();
+		}
+		this.meta.setLore(lore);
+		return this;
+	}
+
 	public ItemBuilder enchant(final Enchantment enchantment, final int level) {
 		return this.enchant(enchantment, level, true);
 	}

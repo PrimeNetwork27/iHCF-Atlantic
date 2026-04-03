@@ -60,8 +60,15 @@ public class CombatTimer extends PlayerTimer implements Listener {
 	public void onExpire(UUID userUUID) {
 		Player player = Bukkit.getPlayer(userUUID);
 		if (player != null) {
+
 			plugin.getManagerHandler().getVisualiseHandler().clearVisualBlocks(player, VisualType.SPAWN_BORDER, null);
 		}
+	}
+
+	@Override
+	public void clearCooldown(Player player) {
+
+		super.clearCooldown(player);
 	}
 
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
@@ -122,6 +129,13 @@ public class CombatTimer extends PlayerTimer implements Listener {
 	}
 
 	private static final long NON_WEAPON_TAG = 5000L;
+
+	@Override
+	public boolean setCooldown(Player player, UUID playerUUID) {
+		if (player != null) {
+		}
+		return super.setCooldown(player, playerUUID);
+	}
 
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
 	public void onEntityDamageByEntity(EntityDamageByEntityEvent event) {

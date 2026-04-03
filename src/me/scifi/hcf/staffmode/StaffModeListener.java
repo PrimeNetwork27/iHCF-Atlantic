@@ -1,11 +1,8 @@
 package me.scifi.hcf.staffmode;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -26,10 +23,11 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
+
+import com.doctordark.util.CC;
+import com.doctordark.util.ItemBuilder;
 
 import me.scifi.hcf.HCF;
-import me.scifi.hcf.Utils;
 import me.scifi.hcf.inventories.Inventories;
 
 public class StaffModeListener implements Listener {
@@ -40,14 +38,17 @@ public class StaffModeListener implements Listener {
 		this.plugin = plugin;
 	}
 
+	private StaffModeManager getManager() {
+		return plugin.getStaffModeManager();
+	}
+
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onBlockPlace(BlockPlaceEvent e) {
 		Player p = e.getPlayer();
-		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
-			p.sendMessage(Utils.chat(plugin.getMessagesYML().getString("STAFFMODE-BLOCK-PLACE")));
+		if (getManager().getStaffMode().contains(p.getUniqueId())) {
+			p.sendMessage(CC.translate(plugin.getMessagesYML().getString("STAFFMODE-BLOCK-PLACE")));
 			e.setCancelled(true);
 		}
-
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
@@ -60,8 +61,8 @@ public class StaffModeListener implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onBlockBreak(BlockBreakEvent e) {
 		Player p = e.getPlayer();
-		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
-			p.sendMessage(Utils.chat(plugin.getMessagesYML().getString("STAFFMODE-BLOCK-BREAK")));
+		if (getManager().getStaffMode().contains(p.getUniqueId())) {
+			p.sendMessage(CC.translate(plugin.getMessagesYML().getString("STAFFMODE-BLOCK-BREAK")));
 			e.setCancelled(true);
 		}
 	}
@@ -75,29 +76,23 @@ public class StaffModeListener implements Listener {
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onEntityDamage(EntityDamageEvent e) {
-		if (e.getEntity() instanceof Player) {
-			Player p = (Player) e.getEntity();
-			if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
-				e.setCancelled(true);
-			}
-
-			if (Vanish.isPlayerVanished(p)) {
-				e.setCancelled(true);
-			}
+		if (!(e.getEntity() instanceof Player)) {
+			return;
+		}
+		Player p = (Player) e.getEntity();
+		if (getManager().getStaffMode().contains(p.getUniqueId()) || Vanish.isPlayerVanished(p)) {
+			e.setCancelled(true);
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onEntityDamageByEntity(EntityDamageByEntityEvent e) {
-		if (e.getDamager() instanceof Player) {
-			Player damager = (Player) e.getDamager();
-			if (plugin.getStaffModeManager().getStaffMode().contains(damager.getUniqueId())) {
-				e.setCancelled(true);
-
-				if (Vanish.isPlayerVanished(damager)) {
-					e.setCancelled(true);
-				}
-			}
+		if (!(e.getDamager() instanceof Player)) {
+			return;
+		}
+		Player damager = (Player) e.getDamager();
+		if (getManager().getStaffMode().contains(damager.getUniqueId()) || Vanish.isPlayerVanished(damager)) {
+			e.setCancelled(true);
 		}
 	}
 
@@ -105,129 +100,96 @@ public class StaffModeListener implements Listener {
 	public void onJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		if (player.hasPermission("hcf.command.staffmode")) {
-			plugin.getStaffModeManager().putInStaffMode(player);
+			getManager().putInStaffMode(player);
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onInteract(PlayerInteractEvent e) {
 		Player p = e.getPlayer();
-		if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
-			if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId()) && e.getItem() != null
-					&& e.getItem().hasItemMeta() && e.getItem().getItemMeta().hasDisplayName()
-					&& e.getItem().getItemMeta().getDisplayName().equals(
-							Utils.chat(plugin.getMessagesYML().getString("STAFFMODE.VANISHITEM.NAME.ENABLED")))) {
-				Vanish.disableVanish(p);
-				ItemStack dye = new ItemStack(Material.INK_SACK, 1, (short) 8);
-				ItemMeta dyeMeta = dye.getItemMeta();
-				dyeMeta.setDisplayName(
-						Utils.chat(plugin.getMessagesYML().getString("STAFFMODE.VANISHITEM.NAME.DISABLED")));
-				List<String> lore = new ArrayList<>();
-				for (String s : plugin.getMessagesYML().getStringList("STAFFMODE.VANISHITEM.LORE")) {
-					lore.add(ChatColor.translateAlternateColorCodes('&', s));
-				}
-				dyeMeta.setLore(lore);
-				dye.setItemMeta(dyeMeta);
-				p.getInventory().setItemInHand(dye);
-			} else if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId()) && e.getItem() != null
-					&& e.getItem().getItemMeta().getDisplayName().equals(
-							Utils.chat(plugin.getMessagesYML().getString("STAFFMODE.VANISHITEM.NAME.DISABLED")))) {
-				Vanish.setVanished(p);
-				ItemStack dye = new ItemStack(Material.INK_SACK, 1, (short) 10);
-				ItemMeta dyeMeta = dye.getItemMeta();
-				dyeMeta.setDisplayName(
-						Utils.chat(plugin.getMessagesYML().getString("STAFFMODE.VANISHITEM.NAME.ENABLED")));
-				List<String> lore = new ArrayList<>();
-				for (String s : plugin.getMessagesYML().getStringList("STAFFMODE.VANISHITEM.LORE")) {
-					lore.add(ChatColor.translateAlternateColorCodes('&', s));
-				}
-				dyeMeta.setLore(lore);
-				dye.setItemMeta(dyeMeta);
-				p.getInventory().setItemInHand(dye);
-			}
+		if (e.getAction() != Action.RIGHT_CLICK_AIR && e.getAction() != Action.RIGHT_CLICK_BLOCK) {
+			return;
+		}
+		if (!getManager().getStaffMode().contains(p.getUniqueId())) {
+			return;
+		}
+		if (e.getItem() == null || !e.getItem().hasItemMeta()) {
+			return;
+		}
+
+		ItemStack held = e.getItem();
+
+		if (held.isSimilar(getManager().getDye())) {
+			Vanish.disableVanish(p);
+			ItemStack disabled = new ItemBuilder(Material.INK_SACK, 1, (byte) 8)
+					.displayName(CC.translate(plugin.getMessagesYML().getString("STAFFMODE.VANISHITEM.NAME.DISABLED")))
+					.lore(CC.translate(plugin.getMessagesYML().getStringList("STAFFMODE.VANISHITEM.LORE"))).build();
+			p.getInventory().setItemInHand(disabled);
+		} else if (held.getType() == Material.INK_SACK && held.getDurability() == 8) {
+			Vanish.setVanished(p);
+			p.getInventory().setItemInHand(getManager().getDye().clone());
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onInteractTP(PlayerInteractEvent e) {
 		Player p = e.getPlayer();
-		ItemStack head = new ItemStack(Material.SKULL, 1);
-		ItemMeta headMeta = head.getItemMeta();
-		headMeta.setDisplayName(Utils.chat(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.RANDOMTP.NAME")));
-		headMeta.setLore(Utils.list(HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE-RANDOMTP.LORE")));
-		head.setItemMeta(headMeta);
-		if (p.getItemInHand().equals(head)) {
-			Random random = new Random();
-			if (HCF.getOnlinePlayers().size() > 1) {
-				int index = random.nextInt(HCF.getOnlinePlayers().size());
-				Player to = (Player) Bukkit.getServer().getOnlinePlayers().toArray()[index];
-				if (to != p) {
-					p.teleport(to);
-					p.sendMessage(Utils.chat(plugin.getMessagesYML().getString("TELEPORT-SUCCESSFUL-MESSAGE")));
-				} else {
-					p.sendMessage(Utils.chat("&cYou cannot teleport to yourself."));
-				}
+		if (!getManager().getStaffMode().contains(p.getUniqueId())) {
+			return;
+		}
+		if (e.getItem() == null || !e.getItem().isSimilar(getManager().getHead())) {
+			return;
+		}
 
+		Random random = new Random();
+		if (HCF.getOnlinePlayers().size() > 1) {
+			int index = random.nextInt(HCF.getOnlinePlayers().size());
+			Player to = (Player) Bukkit.getServer().getOnlinePlayers().toArray()[index];
+			if (to != p) {
+				p.teleport(to);
+				p.sendMessage(CC.translate(plugin.getMessagesYML().getString("TELEPORT-SUCCESSFUL-MESSAGE")));
 			} else {
-				p.sendMessage(Utils.chat(plugin.getMessagesYML().getString("NOT-ENOUGH-PLAYERS")));
+				p.sendMessage(CC.translate("&cYou cannot teleport to yourself."));
 			}
+		} else {
+			p.sendMessage(CC.translate(plugin.getMessagesYML().getString("NOT-ENOUGH-PLAYERS")));
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onRightClick(PlayerInteractEntityEvent e) {
 		Player p = e.getPlayer();
-
-		ItemMeta bookMeta = new ItemStack(Material.BOOK, 1).getItemMeta();
-		bookMeta.setDisplayName(Utils.chat(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.INSPECT.NAME")));
-		List<String> bookLore = new ArrayList<>();
-		for (String s : HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE.INSPECT.LORE")) {
-			bookLore.add(ChatColor.translateAlternateColorCodes('&', s));
+		if (!getManager().getStaffMode().contains(p.getUniqueId())) {
+			return;
 		}
-		bookMeta.setLore(bookLore);
+		if (!(e.getRightClicked() instanceof Player)) {
+			return;
+		}
 
-		if (e.getRightClicked() instanceof Player) {
-			ItemStack ice = new ItemStack(Material.ICE);
-			ItemMeta iceMeta = ice.getItemMeta();
-			Player rightClicked = (Player) e.getRightClicked();
-			iceMeta.setDisplayName(
-					Utils.chat(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.FREEZEBLOCK.NAME")));
-			List<String> iceLore = new ArrayList<>();
-			for (String s : HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE.FREEZEBLOCK.LORE")) {
-				iceLore.add(ChatColor.translateAlternateColorCodes('&', s));
-			}
-			iceMeta.setLore(iceLore);
-			ice.setItemMeta(iceMeta);
-			if (p.getInventory().getItemInHand().getType() == Material.ICE) {
-				if (p.getInventory().getItemInHand().getItemMeta().equals(ice.getItemMeta())) {
-					if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())
-							&& p.hasPermission("hcf.command.freeze")) {
-						if (rightClicked != null) {
-							Bukkit.getServer().dispatchCommand(p, "freeze " + rightClicked.getName());
-						}
-					}
-				}
-			} else if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())
-					&& p.getInventory().getItemInHand().getType() == Material.BOOK
-					&& p.getInventory().getItemInHand().getItemMeta().equals(bookMeta)) {
-				Inventories.staffInventoryInspector(p, rightClicked);
-				p.sendMessage(Utils.chat("&eNow Inspecting &f" + rightClicked.getName()));
-			}
+		Player rightClicked = (Player) e.getRightClicked();
+		ItemStack held = p.getInventory().getItemInHand();
+		if (held == null) {
+			return;
+		}
+
+		if (held.isSimilar(getManager().getIce()) && p.hasPermission("hcf.command.freeze")) {
+			Bukkit.getServer().dispatchCommand(p, "freeze " + rightClicked.getName());
+		} else if (held.isSimilar(getManager().getBook())) {
+			Inventories.staffInventoryInspector(p, rightClicked);
+			p.sendMessage(CC.translate("&eNow Inspecting &f" + rightClicked.getName()));
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onDrop(PlayerDropItemEvent e) {
-		Player p = e.getPlayer();
-		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
+		if (getManager().getStaffMode().contains(e.getPlayer().getUniqueId())) {
 			e.setCancelled(true);
 		}
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPickup(PlayerPickupItemEvent e) {
-		Player p = e.getPlayer();
-		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
+		if (getManager().getStaffMode().contains(e.getPlayer().getUniqueId())) {
 			e.setCancelled(true);
 		}
 	}
@@ -235,25 +197,23 @@ public class StaffModeListener implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onDisconnect(PlayerQuitEvent e) {
 		Player p = e.getPlayer();
-		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
-			plugin.getStaffModeManager().removeFromStaffMode(p);
+		if (getManager().getStaffMode().contains(p.getUniqueId())) {
+			getManager().removeFromStaffMode(p);
 		}
 	}
 
 	@EventHandler
 	public void onInventoryClick(InventoryClickEvent e) {
-		if (e.getInventory() != null && e.getInventory().getTitle()
-				.startsWith(ChatColor.translateAlternateColorCodes('&', "&cInspecting: "))) {
+		if (e.getInventory() != null && e.getInventory().getTitle().startsWith(CC.translate("&cInspecting: "))) {
 			e.setCancelled(true);
 		}
-
 	}
 
 	@EventHandler
 	public void onGameModeChange(PlayerGameModeChangeEvent e) {
 		Player p = e.getPlayer();
-		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
-			p.sendMessage(Utils.chat(plugin.getMessagesYML().getString("STAFFMODE-GAMEMODE-SWITCH")));
+		if (getManager().getStaffMode().contains(p.getUniqueId())) {
+			p.sendMessage(CC.translate(plugin.getMessagesYML().getString("STAFFMODE-GAMEMODE-SWITCH")));
 			p.setGameMode(GameMode.CREATIVE);
 			e.setCancelled(true);
 		}
@@ -262,9 +222,8 @@ public class StaffModeListener implements Listener {
 	@EventHandler
 	public void onInventoryInteract(InventoryClickEvent e) {
 		Player p = (Player) e.getWhoClicked();
-		if (plugin.getStaffModeManager().getStaffMode().contains(p.getUniqueId())) {
+		if (getManager().getStaffMode().contains(p.getUniqueId())) {
 			e.setCancelled(true);
 		}
 	}
-
 }

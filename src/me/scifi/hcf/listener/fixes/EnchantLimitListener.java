@@ -19,24 +19,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import com.google.common.collect.ImmutableMap;
-
 import me.scifi.hcf.ConfigurationService;
-import net.minecraft.server.v1_8_R3.Item.EnumToolMaterial;
-import net.minecraft.server.v1_8_R3.ItemArmor.EnumArmorMaterial;
 
 /**
  * Listener that limits the maximum {@link Enchantment} levels for
  * {@link ItemStack}s.
  */
-public class EnchantLimitListener implements Listener { // TODO: ENUM TOOL MATERIAL DOESNT HAD DIAMOND
-
-	private final ImmutableMap<Material, EnumToolMaterial> ITEM_TOOL_MAPPING = /* TODO:Maps.immutableEnumMap */(ImmutableMap
-			.of(Material.IRON_INGOT, EnumToolMaterial.IRON, Material.GOLD_INGOT, EnumToolMaterial.GOLD));
-
-	private final ImmutableMap<Material, EnumArmorMaterial> ITEM_ARMOUR_MAPPING = /* TODO:Maps.immutableEnumMap */(ImmutableMap
-			.of(Material.IRON_INGOT, EnumArmorMaterial.IRON, Material.GOLD_INGOT, EnumArmorMaterial.GOLD,
-					Material.DIAMOND, EnumArmorMaterial.DIAMOND));
+public class EnchantLimitListener implements Listener {
 
 	/**
 	 * Gets the new fixed level for an enchantment.

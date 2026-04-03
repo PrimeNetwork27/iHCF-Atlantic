@@ -17,6 +17,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
 
+import com.doctordark.util.CC;
 import com.google.common.base.Optional;
 
 import me.scifi.hcf.ConfigurationService;
@@ -71,12 +72,11 @@ public class FactionListener implements Listener {
 		if (faction instanceof PlayerFaction) {
 			CommandSender sender = event.getSender();
 			for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-				String msg = ChatColor.YELLOW + "Faction " + ChatColor.WHITE
-						+ (player == null ? faction.getName() : faction.getDisplayName(player)) + ChatColor.YELLOW
-						+ " has been " + ChatColor.GREEN + "created" + ChatColor.YELLOW + " by " + ChatColor.WHITE
-						+ (sender instanceof Player ? ((Player) sender).getDisplayName() : sender.getName())
-						+ ChatColor.YELLOW + '.';
-				player.sendMessage(msg);
+				String msg = plugin.getMessagesYML().getString("FACTION-CREATE")
+						.replace("{factionName}", (player == null ? faction.getName() : faction.getDisplayName(player)))
+						.replace("{player}",
+								(sender instanceof Player ? ((Player) sender).getDisplayName() : sender.getName()));
+				player.sendMessage(CC.translate(msg));
 			}
 		}
 	}
@@ -87,12 +87,11 @@ public class FactionListener implements Listener {
 		if (faction instanceof PlayerFaction) {
 			CommandSender sender = event.getSender();
 			for (Player player : Bukkit.getServer().getOnlinePlayers()) {
-				String msg = ChatColor.YELLOW + "Faction " + ChatColor.WHITE
-						+ (player == null ? faction.getName() : faction.getDisplayName(player)) + ChatColor.YELLOW
-						+ " has been " + ChatColor.RED + "disbanded" + ChatColor.YELLOW + " by " + ChatColor.WHITE
-						+ (sender instanceof Player ? ((Player) sender).getDisplayName() : sender.getName())
-						+ ChatColor.YELLOW + '.';
-				player.sendMessage(msg);
+				String msg = plugin.getMessagesYML().getString("FACTION-DISBAND")
+						.replace("{factionName}", (player == null ? faction.getName() : faction.getDisplayName(player)))
+						.replace("{player}",
+								(sender instanceof Player ? ((Player) sender).getDisplayName() : sender.getName()));
+				player.sendMessage(CC.translate(msg));
 			}
 		}
 	}
@@ -103,9 +102,9 @@ public class FactionListener implements Listener {
 		if (faction instanceof PlayerFaction) {
 			for (Player player : Bukkit.getServer().getOnlinePlayers()) {
 				Relation relation = faction.getRelation(player);
-				String msg = ChatColor.YELLOW + "The faction " + relation.toChatColour() + event.getOriginalName()
-						+ ChatColor.YELLOW + " has been " + ChatColor.AQUA + "renamed" + ChatColor.YELLOW + " to "
-						+ relation.toChatColour() + event.getNewName() + ChatColor.YELLOW + '.';
+				String msg = plugin.getMessagesYML().getString("FACTION-RENAME")
+						.replace("{oldFactionName}", relation.toChatColour() + event.getOriginalName())
+						.replace("{factionName}", relation.toChatColour() + event.getNewName());
 				player.sendMessage(msg);
 			}
 		}
@@ -129,11 +128,11 @@ public class FactionListener implements Listener {
 		if (getLastLandChangedMeta(player) > 0L) {
 			return; // delay before re-messaging.
 		}
-
 		if (plugin.getManagerHandler().getUserManager().getUser(player.getUniqueId()).isCapzoneEntryAlerts()) {
-			player.sendMessage(
-					ChatColor.YELLOW + "Now entering capture zone: " + event.getCaptureZone().getDisplayName()
-							+ ChatColor.YELLOW + '(' + event.getFaction().getName() + ChatColor.YELLOW + ')');
+			String msg = plugin.getMessagesYML().getString("FACTION-ENTERING-CAPTUREZONE")
+					.replace("{captureName}", event.getCaptureZone().getDisplayName())
+					.replace("{factionName}", event.getFaction().getName());
+			player.sendMessage(CC.translate(msg));
 		}
 	}
 
@@ -145,8 +144,10 @@ public class FactionListener implements Listener {
 		}
 
 		if (plugin.getManagerHandler().getUserManager().getUser(player.getUniqueId()).isCapzoneEntryAlerts()) {
-			player.sendMessage(ChatColor.YELLOW + "Now leaving capture zone: " + event.getCaptureZone().getDisplayName()
-					+ ChatColor.YELLOW + '(' + event.getFaction().getName() + ChatColor.YELLOW + ')');
+			String msg = plugin.getMessagesYML().getString("FACTION-LEAVING-CAPTUREZONE")
+					.replace("{captureName}", event.getCaptureZone().getDisplayName())
+					.replace("{factionName}", event.getFaction().getName());
+			player.sendMessage(CC.translate(msg));
 		}
 	}
 
@@ -165,16 +166,23 @@ public class FactionListener implements Listener {
 		if (getLastLandChangedMeta(player) > 0L) {
 			return; // delay before re-messaging.
 		}
-
-		Faction fromFaction = event.getFromFaction();
-
-		player.sendMessage(ChatColor.YELLOW + "Now leaving: " + fromFaction.getDisplayName(player) + ChatColor.YELLOW
-				+ " (" + (fromFaction.isDeathban() ? ChatColor.RED + "Deathban" : ChatColor.GREEN + "Non-Deathban")
-				+ ChatColor.YELLOW + ')');
-
-		player.sendMessage(ChatColor.YELLOW + "Now entering: " + toFaction.getDisplayName(player) + ChatColor.YELLOW
-				+ " (" + (toFaction.isDeathban() ? ChatColor.RED + "Deathban" : ChatColor.GREEN + "Non-Deathban")
-				+ ChatColor.YELLOW + ')');
+		String leavingstatus = event.getFromFaction().isDeathban()
+				? ChatColor.YELLOW + "(" + ChatColor.RED + "Deathban" + ChatColor.YELLOW + ")"
+				: ChatColor.YELLOW + "(" + ChatColor.GREEN + "Non-Deathban" + ChatColor.YELLOW + ")";
+		String enteringstatus = event.getToFaction().isDeathban()
+				? ChatColor.YELLOW + "(" + ChatColor.RED + "Deathban" + ChatColor.YELLOW + ")"
+				: ChatColor.YELLOW + "(" + ChatColor.GREEN + "Non-Deathban" + ChatColor.YELLOW + ")";
+		String entering = plugin.getMessagesYML().getString("FACTION-ENTERING-CLAIM")
+				.replace("{factionName}", event.getToFaction().getDisplayName(player))
+				.replace("{deathban}", enteringstatus).replace("{deathbanLeft}", leavingstatus).replace("{factionLeft}",
+						(event.getFromFaction() == null ? "" : event.getFromFaction().getDisplayName(player)));
+		player.sendMessage(CC.translate(entering));
+		String leaving = plugin.getMessagesYML().getString("FACTION-LEAVING-CLAIM")
+				.replace("{factionName}", event.getFromFaction().getDisplayName(player))
+				.replace("{deathban}", leavingstatus);
+		if (!leaving.isEmpty()) {
+			player.sendMessage(CC.translate(leaving));
+		}
 	}
 
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -197,7 +205,7 @@ public class FactionListener implements Listener {
 			if (!ConfigurationService.KIT_MAP && !plugin.getManagerHandler().getEotwHandler().isEndOfTheWorld()
 					&& playerFaction.getRegenStatus() == RegenStatus.PAUSED) {
 				event.setCancelled(true);
-				player.sendMessage(ChatColor.RED + "You cannot join factions that are not regenerating DTR.");
+				player.sendMessage(CC.translate(plugin.getMessagesYML().getString("FACTION-JOIN-REGENERATING")));
 				return;
 			}
 
@@ -205,9 +213,10 @@ public class FactionListener implements Listener {
 					.getLastFactionLeaveMillis() - System.currentTimeMillis()) + FACTION_JOIN_WAIT_MILLIS;
 			if (difference > 0L && !player.hasPermission("hcf.faction.argument.staff.forcejoin")) {
 				event.setCancelled(true);
-				player.sendMessage(ChatColor.RED + "You cannot join factions after just leaving within "
-						+ FACTION_JOIN_WAIT_WORDS + ". " + "You gotta wait another "
-						+ DurationFormatUtils.formatDurationWords(difference, true, true) + '.');
+				String msg = plugin.getMessagesYML().getString("FACTION-JOIN-COOLDOWN")
+						.replace("{timeLeft}", FACTION_JOIN_WAIT_WORDS)
+						.replace("{difference}", DurationFormatUtils.formatDurationWords(difference, true, true));
+				player.sendMessage(CC.translate(msg));
 			}
 		}
 	}
@@ -226,7 +235,7 @@ public class FactionListener implements Listener {
 				if (plugin.getManagerHandler().getFactionManager().getFactionAt(player.getLocation()) == faction) {
 					event.setCancelled(true);
 					player.sendMessage(
-							ChatColor.RED + "You cannot leave your faction whilst you remain in its' territory.");
+							CC.translate(plugin.getMessagesYML().getString("FACTION-LEAVING-REMAIN-TERRITORY")));
 				}
 			}
 		}
@@ -238,9 +247,9 @@ public class FactionListener implements Listener {
 		PlayerFaction playerFaction = plugin.getManagerHandler().getFactionManager().getPlayerFaction(player);
 		if (playerFaction != null) {
 			playerFaction.printDetails(player);
-			playerFaction.broadcast(ChatColor.DARK_GREEN + "Member Online: " + ChatColor.GREEN
-					+ playerFaction.getMember(player).getRole().getAstrix() + player.getName() + ChatColor.GOLD + '.',
-					player.getUniqueId());
+			String msg = plugin.getMessagesYML().getString("FACTION-MEMBER-JOIN").replace("{memberName}",
+					playerFaction.getMember(player).getRole().getAstrix() + player.getName());
+			playerFaction.broadcast(CC.translate(msg), player.getUniqueId());
 		}
 	}
 
@@ -249,8 +258,9 @@ public class FactionListener implements Listener {
 		Player player = event.getPlayer();
 		PlayerFaction playerFaction = plugin.getManagerHandler().getFactionManager().getPlayerFaction(player);
 		if (playerFaction != null) {
-			playerFaction.broadcast(ChatColor.RED + "Member Offline: " + ChatColor.GREEN
-					+ playerFaction.getMember(player).getRole().getAstrix() + player.getName() + ChatColor.GOLD + '.');
+			String msg = plugin.getMessagesYML().getString("FACTION-MEMBER-LEFT").replace("{memberName}",
+					playerFaction.getMember(player).getRole().getAstrix() + player.getName());
+			playerFaction.broadcast(CC.translate(msg));
 		}
 	}
 }

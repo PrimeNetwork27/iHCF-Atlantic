@@ -4,6 +4,8 @@ import com.doctordark.internal.com.doctordark.base.BasePlugin;
 import com.doctordark.util.InventoryUtils;
 import com.doctordark.util.JavaUtils;
 import me.scifi.hcf.Utils;
+import me.scifi.hcf.api.Crowbar;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -19,7 +21,6 @@ import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import me.scifi.hcf.HCF;
-import me.scifi.hcf.listener.Crowbar;
 
 import java.util.Arrays;
 import java.util.Map;

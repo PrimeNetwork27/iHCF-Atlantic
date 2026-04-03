@@ -11,15 +11,14 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 public class FurnaceSmeltSpeederListener implements Listener {
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
-            Block block = event.getClickedBlock();
-            BlockState state = block.getState();
-            if (state instanceof Furnace) {
-                //TODO: Set cook speed times 6
-                //((Furnace) state).setCookSpeedMultiplier(6);
-            }
-        }
-    }
+	@EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+	public void onPlayerInteract(PlayerInteractEvent event) {
+		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
+			Block block = event.getClickedBlock();
+			BlockState state = block.getState();
+			if (state instanceof Furnace) {
+				((Furnace) state).setCookTime((short) 6);
+			}
+		}
+	}
 }

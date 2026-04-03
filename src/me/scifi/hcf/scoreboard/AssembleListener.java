@@ -1,13 +1,14 @@
 package me.scifi.hcf.scoreboard;
 
-import me.scifi.hcf.scoreboard.events.AssembleBoardCreateEvent;
-import me.scifi.hcf.scoreboard.events.AssembleBoardDestroyEvent;
-import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+
+import lombok.Getter;
+import me.scifi.hcf.scoreboard.events.AssembleBoardCreateEvent;
+import me.scifi.hcf.scoreboard.events.AssembleBoardDestroyEvent;
 
 @Getter
 public class AssembleListener implements Listener {
@@ -27,7 +28,8 @@ public class AssembleListener implements Listener {
 			return;
 		}
 
-		getAssemble().getBoards().put(event.getPlayer().getUniqueId(), new AssembleBoard(event.getPlayer(), getAssemble()));
+		getAssemble().getBoards().put(event.getPlayer().getUniqueId(),
+				new AssembleBoard(event.getPlayer(), getAssemble()));
 	}
 
 	@EventHandler
@@ -42,11 +44,5 @@ public class AssembleListener implements Listener {
 		getAssemble().getBoards().remove(event.getPlayer().getUniqueId());
 		event.getPlayer().setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 	}
-
-	//TODO see how we can make this better
-//	@EventHandler
-//	public void onPluginDisable(PluginDisableEvent event) {
-//		getAssemble().disable();
-//	}
 
 }

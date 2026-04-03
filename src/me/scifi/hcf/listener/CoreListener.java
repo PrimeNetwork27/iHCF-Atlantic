@@ -72,16 +72,10 @@ public class CoreListener implements Listener {
 	}
 
 	@EventHandler
-	public void onCombatQuit(PlayerQuitEvent e) {
-		e.setQuitMessage(null);
-		Player player = e.getPlayer();
-
-	}
-
-	@EventHandler
-	public void onCombatJoin(PlayerJoinEvent e) {
-		e.setJoinMessage(null);
-		Player player = e.getPlayer();
+	public void onPlayerJoin(PlayerJoinEvent event) {
+		if (event.getPlayer().hasPlayedBefore()) {
+			plugin.getManagerHandler().getEconomyManager().addBalance(event.getPlayer().getUniqueId(), 500);
+		}
 
 	}
 

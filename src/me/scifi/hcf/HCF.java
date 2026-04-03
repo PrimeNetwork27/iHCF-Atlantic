@@ -21,6 +21,7 @@ import com.doctordark.util.Config;
 import com.doctordark.util.Rank;
 import com.doctordark.util.itemdb.ItemDb;
 import com.doctordark.util.itemdb.SimpleItemDb;
+import com.doctordark.util.menu.MenuListener;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 
 import io.github.nosequel.tab.shared.TabHandler;
@@ -167,7 +168,6 @@ public class HCF extends JavaPlugin {
 	private static HCF plugin;
 	private Config messagesYML;
 	private Config itemsYML = new Config(this, "items", getDataFolder().getAbsolutePath());
-	private Config miscYML = new Config(this, "misc", getDataFolder().getAbsolutePath());
 	private Config config;
 	private Random random = new Random();
 	private CombatLogListener combatLogListener;
@@ -321,6 +321,7 @@ public class HCF extends JavaPlugin {
 		manager.registerEvents(new ElevatorListener(), this);
 		manager.registerEvents(new InspectionListener(), this);
 		manager.registerEvents(new PunishListener(), this);
+		manager.registerEvents(new MenuListener(), this);
 		Ability.load();
 	}
 

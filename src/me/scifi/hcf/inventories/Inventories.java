@@ -22,7 +22,7 @@ import me.scifi.hcf.HCF;
 import me.scifi.hcf.Utils;
 import me.scifi.hcf.faction.type.PlayerFaction;
 
-public class Inventories {
+public class Inventories { // TODO: Use our own Menu API, to remove this class.
 	private static HCF plugin = HCF.getPlugin();
 
 	public static void staffInventoryInspector(Player p, Player target) {

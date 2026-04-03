@@ -11,11 +11,12 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
-import org.bukkit.inventory.meta.ItemMeta;
+
+import com.doctordark.util.CC;
+import com.doctordark.util.ItemBuilder;
 
 import lombok.Getter;
 import me.scifi.hcf.HCF;
-import me.scifi.hcf.Utils;
 
 @Getter
 public final class StaffModeManager { // Class created to avoid the static abuse.
@@ -25,6 +26,29 @@ public final class StaffModeManager { // Class created to avoid the static abuse
 	private final Map<UUID, ItemStack[]> armorContents = new HashMap<>();
 
 	private final Map<UUID, ItemStack[]> inventoryContents = new HashMap<>();
+	public final ItemStack book = new ItemBuilder(Material.BOOK)
+			.displayName(CC.translate(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.INSPECT.NAME")))
+			.lore(CC.translate(HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE.INSPECT.LORE"))).build();
+
+	public final ItemStack compass = new ItemBuilder(Material.COMPASS)
+			.displayName(CC.translate(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.THRUCOMPASS.NAME")))
+			.lore(CC.translate(HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE.THRUCOMPASS.LORE"))).build();
+
+	public final ItemStack ice = new ItemBuilder(Material.ICE)
+			.displayName(CC.translate(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.FREEZEBLOCK.NAME")))
+			.lore(CC.translate(HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE.FREEZEBLOCK.LORE"))).build();
+
+	public final ItemStack carpet = new ItemBuilder(Material.CARPET)
+			.displayName(CC.translate(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.BETTERVIEW.NAME")))
+			.lore(CC.translate(HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE.BETTERVIEW.LORE"))).build();
+
+	public final ItemStack dye = new ItemBuilder(Material.INK_SACK, 1, (byte) 10)
+			.displayName(CC.translate(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.VANISHITEM.NAME.ENABLED")))
+			.lore(CC.translate(HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE.VANISHITEM.LORE"))).build();
+
+	public final ItemStack head = new ItemBuilder(Material.SKULL, 1, (byte) 3)
+			.displayName(CC.translate(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.RANDOMTP.NAME")))
+			.lore(CC.translate(HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE.RANDOMTP.LORE"))).build();
 
 	public void putInStaffMode(final Player p) {
 		p.setGameMode(GameMode.CREATIVE);
@@ -54,47 +78,6 @@ public final class StaffModeManager { // Class created to avoid the static abuse
 	}
 
 	public void giveModItems(final Player p) {
-		ItemStack book = new ItemStack(Material.BOOK);
-		ItemStack compass = new ItemStack(Material.COMPASS);
-		ItemStack ice = new ItemStack(Material.ICE);
-		ItemStack carpet = new ItemStack(Material.CARPET);
-		ItemStack dye = new ItemStack(Material.INK_SACK, 1, (byte) 10);
-		ItemStack head = new ItemStack(Material.SKULL, 1);
-
-		ItemMeta bookMeta = book.getItemMeta();
-		ItemMeta compassMeta = compass.getItemMeta();
-		ItemMeta iceMeta = ice.getItemMeta();
-		ItemMeta carpetMeta = carpet.getItemMeta();
-		ItemMeta dyeMeta = dye.getItemMeta();
-		ItemMeta headMeta = head.getItemMeta();
-
-		bookMeta.setDisplayName(Utils.chat(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.INSPECT.NAME")));
-		bookMeta.setLore(Utils.list(HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE.INSPECT.LORE")));
-
-		compassMeta
-				.setDisplayName(Utils.chat(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.THRUCOMPASS.NAME")));
-		compassMeta.setLore(Utils.list(HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE.THRUCOMPASS.LORE")));
-
-		iceMeta.setDisplayName(Utils.chat(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.FREEZEBLOCK.NAME")));
-		iceMeta.setLore(Utils.list(HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE.FREEZEBLOCK.LORE")));
-
-		carpetMeta.setDisplayName(Utils.chat(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.BETTERVIEW.NAME")));
-		carpetMeta.setLore(Utils.list(HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE.BETTERVIEW.LORE")));
-
-		dyeMeta.setDisplayName(
-				Utils.chat(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.VANISHITEM.NAME.ENABLED")));
-		dyeMeta.setLore(Utils.list(HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE.VANISHITEM.LORE")));
-
-		headMeta.setDisplayName(Utils.chat(HCF.getPlugin().getMessagesYML().getString("STAFFMODE.RANDOMTP.NAME")));
-		headMeta.setLore(Utils.list(HCF.getPlugin().getMessagesYML().getStringList("STAFFMODE-RANDOMTP.LORE")));
-
-		book.setItemMeta(bookMeta);
-		compass.setItemMeta(compassMeta);
-		ice.setItemMeta(iceMeta);
-		carpet.setItemMeta(carpetMeta);
-		dye.setItemMeta(dyeMeta);
-		head.setItemMeta(headMeta);
-
 		PlayerInventory inv = p.getInventory();
 		inv.setItem(HCF.getPlugin().getMessagesYML().getInt("STAFFMODE.INSPECT.SLOT"), book);
 		inv.setItem(HCF.getPlugin().getMessagesYML().getInt("STAFFMODE.THRUCOMPASS.SLOT"), compass);

@@ -15,7 +15,6 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
@@ -180,20 +179,66 @@ public class FactionManager implements Listener, IManager {
 	}
 
 	public PlayerFaction getContainingPlayerFaction(String search) {
-		OfflinePlayer target = JavaUtils.isUUID(search) ? Bukkit.getOfflinePlayer(UUID.fromString(search))
-				: Bukkit.getOfflinePlayer(search); // TODO: breaking
-		return target.hasPlayedBefore() || target.isOnline() ? getPlayerFaction(target.getUniqueId()) : null;
-	}
+		if (JavaUtils.isUUID(search)) {
+			return getPlayerFaction(UUID.fromString(search));
+		}
 
+		Player online = Bukkit.getPlayerExact(search);
+		if (online != null) {
+			return getPlayerFaction(online.getUniqueId());
+		}
+
+		for (Faction faction : factionUUIDMap.values()) {
+			if (faction instanceof PlayerFaction) {
+				PlayerFaction playerFaction = (PlayerFaction) faction;
+				for (FactionMember member : playerFaction.getMembers().values()) {
+					if (member.getName().equalsIgnoreCase(search)) {
+						return playerFaction;
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+	/*
+	 * public PlayerFaction getContainingPlayerFaction(String search) {
+	 * OfflinePlayer target = JavaUtils.isUUID(search) ?
+	 * Bukkit.getOfflinePlayer(UUID.fromString(search)) :
+	 * Bukkit.getOfflinePlayer(search); // TODO: breaking return
+	 * target.hasPlayedBefore() || target.isOnline() ?
+	 * getPlayerFaction(target.getUniqueId()) : null; }
+	 */
+
+	/*
+	 * public Faction getContainingFaction(String search) { Faction faction =
+	 * getFaction(search); if (faction != null) { return faction; }
+	 * 
+	 * UUID playerUUID = Bukkit.getOfflinePlayer(search).getUniqueId(); // TODO:
+	 * breaking if (playerUUID != null) { return getPlayerFaction(playerUUID); }
+	 * 
+	 * return null; }
+	 */
 	public Faction getContainingFaction(String search) {
 		Faction faction = getFaction(search);
 		if (faction != null) {
 			return faction;
 		}
 
-		UUID playerUUID = Bukkit.getOfflinePlayer(search).getUniqueId(); // TODO: breaking
-		if (playerUUID != null) {
-			return getPlayerFaction(playerUUID);
+		Player online = Bukkit.getPlayerExact(search);
+		if (online != null) {
+			return getPlayerFaction(online.getUniqueId());
+		}
+
+		for (Faction f : factionUUIDMap.values()) {
+			if (f instanceof PlayerFaction) {
+				PlayerFaction playerFaction = (PlayerFaction) f;
+				for (FactionMember member : playerFaction.getMembers().values()) {
+					if (member.getName().equalsIgnoreCase(search)) {
+						return playerFaction;
+					}
+				}
+			}
 		}
 
 		return null;

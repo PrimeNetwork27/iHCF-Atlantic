@@ -4,16 +4,21 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
+
+import me.scifi.hcf.HCF;
 
 /**
  * Copy from PlayerUtil FOUNDATION.
@@ -46,6 +51,21 @@ public final class PlayerUtil {
 		final Player found = lookupNickedPlayer0(name);
 
 		return found;
+	}
+
+	public static void findOfflinePlayer(String name, Consumer<OfflinePlayer> callback) {
+		Player online = Bukkit.getPlayerExact(name);
+		// Find if it online first.
+		if (online != null) {
+			callback.accept(online);
+			return;
+		}
+		// Not online? Create a separate thread to don't lag the server.
+		CompletableFuture.supplyAsync(() -> Arrays.stream(Bukkit.getOfflinePlayers())
+				.filter(p -> p.getName() != null && p.getName().equalsIgnoreCase(name)).findFirst().orElse(null))
+				.thenAccept(offlinePlayer -> Bukkit.getScheduler().runTask(HCF.getPlugin(), // We get it, now we send it
+																							// on the main-thread.
+						() -> callback.accept(offlinePlayer)));
 	}
 
 	private static Player lookupNickedPlayer0(String name) {
