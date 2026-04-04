@@ -1,17 +1,19 @@
 package me.scifi.hcf.faction.argument;
 
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
 import com.doctordark.util.BukkitUtils;
 import com.doctordark.util.JavaUtils;
 import com.doctordark.util.command.CommandArgument;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+
 import me.scifi.hcf.HCF;
 import me.scifi.hcf.Utils;
-import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import me.scifi.hcf.faction.FactionExecutor;
 import me.scifi.hcf.faction.type.Faction;
 
@@ -20,94 +22,102 @@ import me.scifi.hcf.faction.type.Faction;
  */
 public class FactionHelpArgument extends CommandArgument {
 
-    private static final int HELP_PER_PAGE = 10;
+	private static final int HELP_PER_PAGE = 10;
 
-    private ImmutableMultimap<Integer, String> pages;
-    private final FactionExecutor executor;
+	private ImmutableMultimap<Integer, String> pages;
+	private final FactionExecutor executor;
+	private final HCF plugin;
 
-    public FactionHelpArgument(FactionExecutor executor) {
-        super("help", "View help on how to use factions.");
-        this.executor = executor;
-    }
+	public FactionHelpArgument(FactionExecutor executor) {
+		super("help", "View help on how to use factions.");
+		this.executor = executor;
+		this.plugin = HCF.getPlugin();
+	}
 
-    @Override
-    public String getUsage(String label) {
-        return '/' + label + ' ' + getName();
-    }
+	@Override
+	public String getUsage(String label) {
+		return '/' + label + ' ' + getName();
+	}
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length < 2) {
-            showPage(sender, label, 1);
-            return true;
-        }
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+		if (args.length < 2) {
+			showPage(sender, label, 1);
+			return true;
+		}
 
-        Integer page = JavaUtils.tryParseInt(args[1]);
+		Integer page = JavaUtils.tryParseInt(args[1]);
 
-        if (page == null) {
-            sender.sendMessage(ChatColor.RED + "'" + args[1] + "' is not a valid number.");
-            return true;
-        }
+		if (page == null) {
+			sender.sendMessage(ChatColor.RED + "'" + args[1] + "' is not a valid number.");
+			return true;
+		}
 
-        showPage(sender, label, page);
-        return true;
-    }
+		showPage(sender, label, page);
+		return true;
+	}
 
-    private void showPage(CommandSender sender, String label, int pageNumber) {
-        // Create the multimap.
-        if (pages == null) {
-            boolean isPlayer = sender instanceof Player;
-            int val = 1;
-            int count = 0;
-            Multimap<Integer, String> pages = ArrayListMultimap.create();
-            for (CommandArgument argument : executor.getArguments()) {
-                if (argument == this)
-                    continue;
+	private void showPage(CommandSender sender, String label, int pageNumber) {
+		// Create the multimap.
+		if (pages == null) {
+			boolean isPlayer = sender instanceof Player;
+			int val = 1;
+			int count = 0;
+			Multimap<Integer, String> pages = ArrayListMultimap.create();
+			for (CommandArgument argument : executor.getArguments()) {
+				if (argument == this) {
+					continue;
+				}
 
-                // Check the permission and if the player can access.
-                String permission = argument.getPermission();
-                if (permission != null && !sender.hasPermission(permission))
-                    continue;
-                if (argument.isPlayerOnly() && !isPlayer)
-                    continue;
+				// Check the permission and if the player can access.
+				String permission = argument.getPermission();
+				if (permission != null && !sender.hasPermission(permission)) {
+					continue;
+				}
+				if (argument.isPlayerOnly() && !isPlayer) {
+					continue;
+				}
 
-                count++;
-                // pages.get(val).add(ChatColor.RED + "/" + label + ' ' + argument.getName() + " - " + ChatColor.GRAY + argument.getDescription());
-                pages.get(val).add(Utils.chat(HCF.getPlugin().getMessagesYML().getString("FACTION-HELP-FORMAT")
-                .replace("%argumentname%", argument.getName())
-                .replace("%argumentdescription%",argument.getDescription())));
-                if (count % HELP_PER_PAGE == 0) {
-                    val++;
-                }
-            }
+				count++;
+				pages.get(val)
+						.add(Utils.chat(HCF.getPlugin().getMessagesYML().getString("FACTION-HELP-FORMAT")
+								.replace("%argumentname%", argument.getName())
+								.replace("%argumentdescription%", argument.getDescription())));
+				if (count % HELP_PER_PAGE == 0) {
+					val++;
+				}
+			}
 
-            // Finally assign it.
-            this.pages = ImmutableMultimap.copyOf(pages);
-        }
+			// Finally assign it.
+			this.pages = ImmutableMultimap.copyOf(pages);
+		}
 
-        int totalPageCount = (pages.size() / HELP_PER_PAGE) + 1;
+		int totalPageCount = (pages.size() / HELP_PER_PAGE) + 1;
 
-        if (pageNumber < 1) {
-            sender.sendMessage(ChatColor.RED + "You cannot view a page less than 1.");
-            return;
-        }
+		if (pageNumber < 1) {
+			sender.sendMessage(plugin.getMessagesYML().getString("FACTION-PLAYER-HELP-NEGATIVE"));
+			return;
+		}
 
-        if (pageNumber > totalPageCount) {
-            sender.sendMessage(ChatColor.RED + "There are only " + totalPageCount + " pages.");
-            return;
-        }
+		if (pageNumber > totalPageCount) {
+			sender.sendMessage(plugin.getMessagesYML().getString("FACTION-PLAYER-HELP-VALID").replace("{total}",
+					String.valueOf(totalPageCount)));
+			return;
+		}
 
-        sender.sendMessage(ChatColor.DARK_GRAY + BukkitUtils.STRAIGHT_LINE_DEFAULT);
-        //sender.sendMessage(ChatColor.BLUE + " Faction Help " + ChatColor.WHITE + "(Page " + pageNumber + '/' + totalPageCount + ')');
-        sender.sendMessage(Utils.chat(HCF.getPlugin().getMessagesYML().getString("FACTION-HELP-TITLE")
-        .replace("%pagenumber%",Integer.toString(pageNumber))
-        .replace("%totalpagecount%",Integer.toString(totalPageCount))));
-        for (String message : pages.get(pageNumber)) {
-            sender.sendMessage("  " + message);
-        }
-
-        sender.sendMessage(ChatColor.GOLD + " You are currently on " + ChatColor.WHITE + "Page " + pageNumber + '/' + totalPageCount + ChatColor.GOLD + '.');
-        sender.sendMessage(ChatColor.GOLD + " To view other pages, use " + ChatColor.YELLOW + '/' + label + ' ' + getName() + " <page#>" + ChatColor.GOLD + '.');
-        sender.sendMessage(ChatColor.DARK_GRAY + BukkitUtils.STRAIGHT_LINE_DEFAULT);
-    }
+		sender.sendMessage(ChatColor.DARK_GRAY + BukkitUtils.STRAIGHT_LINE_DEFAULT);
+		// sender.sendMessage(ChatColor.BLUE + " Faction Help " + ChatColor.WHITE +
+		// "(Page " + pageNumber + '/' + totalPageCount + ')');
+		sender.sendMessage(Utils.chat(HCF.getPlugin().getMessagesYML().getString("FACTION-HELP-TITLE")
+				.replace("%pagenumber%", Integer.toString(pageNumber))
+				.replace("%totalpagecount%", Integer.toString(totalPageCount))));
+		for (String message : pages.get(pageNumber)) {
+			sender.sendMessage("  " + message);
+		}
+		sender.sendMessage(plugin.getMessagesYML().getString("FACTION-HELP-PAGES-CURRENTLY")
+				.replace("{number}", String.valueOf(pageNumber)).replace("{total}", String.valueOf(totalPageCount)));
+		sender.sendMessage(plugin.getMessagesYML().getString("FACTION-HELP-PAGES-VIEW").replace("{label}", label)
+				.replace("{name}", getName()));
+		sender.sendMessage(ChatColor.DARK_GRAY + BukkitUtils.STRAIGHT_LINE_DEFAULT);
+	}
 }

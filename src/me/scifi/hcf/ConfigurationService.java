@@ -80,7 +80,11 @@ public class ConfigurationService { // TODO: Change to Wrapper class?
 				}
 			}
 		}
-
+		HOME_ENDERPEARL = config.getBoolean("home_enderpearl", true);
+		HOME_END = config.getBoolean("home_end", true);
+		cooldown_end = config.getLong("home_end_cooldown", 35000L);
+		cooldown_nether = config.getLong("home_nether_cooldown", 30000L);
+		cooldown_overworld = config.getLong("home_overworld_cooldown", 10000L);
 		DIAMOND_ORE_ALERTS = config.getBoolean("diamond_ore_alerts", DIAMOND_ORE_ALERTS);
 
 		SUBCLAIM_NAME_CHARACTERS_MIN = config.getInt("subclaim_name_characters_min", SUBCLAIM_NAME_CHARACTERS_MIN);
@@ -189,11 +193,16 @@ public class ConfigurationService { // TODO: Change to Wrapper class?
 
 	public static long DEFAULT_DEATHBAN_DURATION = TimeUnit.HOURS.toMillis(1L);
 
+	// Faction Home Settings
+	public static boolean HOME_ENDERPEARL;
+	public static boolean HOME_END;
+	public static long cooldown_end;
+	public static long cooldown_nether;
+	public static long cooldown_overworld;
 	// Faction tag colours.
 	public static ChatColor TEAMMATE_COLOUR;
 	public static ChatColor ALLY_COLOUR;
 	public static ChatColor ENEMY_COLOUR;
-
 	public static ChatColor SAFEZONE_COLOUR;
 	public static ChatColor ROAD_COLOUR;
 	public static ChatColor WARZONE_COLOUR;

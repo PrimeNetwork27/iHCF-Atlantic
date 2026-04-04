@@ -31,10 +31,10 @@ import com.google.common.base.Optional;
 
 import me.scifi.hcf.ConfigurationService;
 import me.scifi.hcf.HCF;
-import me.scifi.hcf.api.Crowbar;
 import me.scifi.hcf.faction.FactionMember;
 import me.scifi.hcf.faction.claim.Claim;
 import me.scifi.hcf.faction.type.PlayerFaction;
+import me.scifi.hcf.features.Crowbar;
 
 /**
  * Handles the events caused by using a {@link Crowbar}.

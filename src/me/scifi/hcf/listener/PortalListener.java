@@ -2,7 +2,6 @@ package me.scifi.hcf.listener;
 
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -19,9 +18,11 @@ import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.potion.PotionEffectType;
 
 import com.doctordark.util.CC;
+import com.doctordark.util.LocationUtil;
 
 import gnu.trove.map.TObjectLongMap;
 import gnu.trove.map.hash.TObjectLongHashMap;
+import lombok.Setter;
 import me.scifi.hcf.ConfigurationService;
 import me.scifi.hcf.DurationFormatter;
 import me.scifi.hcf.HCF;
@@ -30,18 +31,15 @@ import me.scifi.hcf.timer.PlayerTimer;
 public class PortalListener implements Listener {
 
 	private static final long PORTAL_MESSAGE_DELAY_THRESHOLD = 2500L;
-
-	private final int x = HCF.getPlugin().getConfig().getInt("ENDEXIT.X");
-	private final int y = HCF.getPlugin().getConfig().getInt("ENDEXIT.Y");
-	private final int z = HCF.getPlugin().getConfig().getInt("ENDEXIT.Z");
-
-	private final Location endExit = new Location(Bukkit.getServer().getWorld("world"), x, y, z);
+	@Setter
+	private Location endExit;
 
 	private final TObjectLongMap<UUID> messageDelays = new TObjectLongHashMap<>();
 	private final HCF plugin;
 
 	public PortalListener(HCF plugin) {
 		this.plugin = plugin;
+		this.endExit = LocationUtil.deserializeLocation(HCF.getPlugin().getConfig().getString("ENDEXIT"));
 	}
 
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.NORMAL)

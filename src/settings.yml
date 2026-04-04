@@ -61,6 +61,12 @@ wilderness_colour: "DARK_GREEN"
 max_allies_per_faction: 1
 max_claims_per_faction: 8
 allow_claiming_besides_roads: true
+home_enderpearl: true ## IF FALSE, YOU CAN'T HOME WITH ENDERPEARL TIMER.
+home_end: true ## True means can home on end, false means can't.
+home_end_cooldown: 35000L ## Is this in millis.
+home_nether_cooldown: 30000L ## same
+home_overworld_cooldown: 10000L ##same
+
 
 dtr_millis_between_updates: 45000
 

@@ -1,9 +1,8 @@
 package me.scifi.hcf.listener;
 
+import java.util.Set;
+
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -11,7 +10,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import me.scifi.hcf.HCF;
+import me.scifi.hcf.Utils;
+import me.scifi.hcf.command.MuteChatCommand;
 import me.scifi.hcf.faction.FactionManager;
+import me.scifi.hcf.faction.struct.ChatChannel;
 import me.scifi.hcf.faction.type.PlayerFaction;
 
 public class ChatListener implements Listener {
@@ -23,32 +25,45 @@ public class ChatListener implements Listener {
 	}
 
 	@EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
-	public void onPlayerChat(AsyncPlayerChatEvent event) {
-		String message = event.getMessage();
-		Player player = event.getPlayer();
+	public void onChat(AsyncPlayerChatEvent e) {
+		Player p = e.getPlayer();
+		String message = e.getMessage().replace("%", "%%");
 		FactionManager fm = plugin.getManagerHandler().getFactionManager();
-		PlayerFaction playerFaction = fm.getPlayerFaction(player);
-		String displayName = player.getDisplayName();
-		ConsoleCommandSender console = Bukkit.getConsoleSender();
-		String defaultFormat = getChatFormat(player, playerFaction, console);
+		String rankName = plugin.getRank().getGroupPrefix(p);
+		PlayerFaction playerFaction = fm.getPlayerFaction(p);
 
-		// Handle the custom messaging here.
-		event.setFormat(defaultFormat);
-		event.setCancelled(true);
-		console.sendMessage(String.format(defaultFormat, displayName, message));
-		for (Player recipient : event.getRecipients()) {
-			recipient.sendMessage(String.format(getChatFormat(player, playerFaction, recipient), displayName, message));
+		ChatChannel chatChannel = playerFaction == null ? ChatChannel.PUBLIC
+				: playerFaction.getMember(p).getChatChannel();
+
+		if (MuteChatCommand.isLocked && !p.hasPermission("hcf.command.mutechat.bypass")) {
+			p.sendMessage(Utils.chat(plugin.getMessagesYML().getString("CHAT-MUTED-TALK")));
+			e.setCancelled(true);
+			return;
 		}
-	}
 
-	private String getChatFormat(Player player, PlayerFaction playerFaction, CommandSender viewer) {
-		String factionTag = (playerFaction == null ? ChatColor.RED.toString() + '*'
-				: playerFaction.getDisplayName(viewer));
-		String result;
-		result = ChatColor.GOLD + "[" + factionTag + ChatColor.GOLD + "]" + " %1$s" + ChatColor.GRAY + ": "
-				+ ChatColor.WHITE + "%2$s";
-
-		return result;
+		switch (chatChannel) {
+		case PUBLIC: {
+			String factionTag = playerFaction == null ? "&c*" : "&c" + playerFaction.getName();
+			e.setFormat(Utils.chat("&6[" + factionTag + "&6] " + rankName + p.getName() + "&7: &f") + message);
+			break;
+		}
+		case FACTION: {
+			String formatted = String.format(chatChannel.getRawFormat(p), p.getDisplayName(), message);
+			e.setCancelled(true);
+			playerFaction.getOnlinePlayers().forEach(player -> player.sendMessage(formatted));
+			Bukkit.getConsoleSender().sendMessage(formatted);
+			break;
+		}
+		case ALLIANCE: {
+			String formatted = String.format(chatChannel.getRawFormat(p), p.getDisplayName(), message);
+			Set<Player> recipients = playerFaction.getOnlinePlayers();
+			playerFaction.getAlliedFactions().forEach(af -> recipients.addAll(af.getOnlinePlayers()));
+			e.setCancelled(true);
+			recipients.forEach(player -> player.sendMessage(formatted));
+			Bukkit.getConsoleSender().sendMessage(formatted);
+			break;
+		}
+		}
 	}
 
 }

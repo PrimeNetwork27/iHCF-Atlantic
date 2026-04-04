@@ -79,18 +79,9 @@ enchantment-limits:
   LOOT_BONUS_MOBS: 3
   LUCK: 3
   LURE: 3
-ENDEXIT:
-  x: 0
-  y: 71
-  z: 0
-ENDPORTAL:
-  x: 0
-  y: 71
-  z: 0
-ENDSPAWN:
-  x: 0
-  y: 100
-  z: 0
+ENDEXIT: [world=Overworld,x=0,y=71,z=0,yaw=0.0,pitch=0.0]
+ENDPORTAL: [world=END,x=0,y=71,z=0,yaw=0.0,pitch=0.0]
+ENDSPAWN: [world=END,x=0,y=100,z=0,yaw=0.0,pitch=0.0]
 eotw:
   chat-symbol-prefix: ""
   chat-symbol-suffix: ""
@@ -107,3 +98,6 @@ STARTING-BALANCE: 250
 ROGUE-SPEED-COOLDOWN: 30
 ARCHER-JUMPBOOST-COOLDOWN: 30
 RECORDING-COOLDOWN: 300
+NametagPacketRestriction:
+  Enabled: false
+  BypassPrefix: '&a'

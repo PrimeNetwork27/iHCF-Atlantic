@@ -4,7 +4,7 @@ import com.doctordark.internal.com.doctordark.base.BasePlugin;
 import com.doctordark.util.InventoryUtils;
 import com.doctordark.util.JavaUtils;
 import me.scifi.hcf.Utils;
-import me.scifi.hcf.api.Crowbar;
+import me.scifi.hcf.features.Crowbar;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;

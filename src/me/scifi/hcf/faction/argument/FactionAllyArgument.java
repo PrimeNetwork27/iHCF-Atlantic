@@ -1,11 +1,19 @@
 package me.scifi.hcf.faction.argument;
 
-import com.doctordark.util.command.CommandArgument;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+
+import com.doctordark.util.command.CommandArgument;
+
 import me.scifi.hcf.ConfigurationService;
 import me.scifi.hcf.HCF;
 import me.scifi.hcf.faction.event.FactionRelationCreateEvent;
@@ -14,149 +22,152 @@ import me.scifi.hcf.faction.struct.Role;
 import me.scifi.hcf.faction.type.Faction;
 import me.scifi.hcf.faction.type.PlayerFaction;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-
 /**
- * Faction argument used to request or accept ally {@link Relation} invitations from a {@link Faction}.
+ * Faction argument used to request or accept ally {@link Relation} invitations
+ * from a {@link Faction}.
  */
 public class FactionAllyArgument extends CommandArgument {
 
-    private static final Relation RELATION = Relation.ALLY;
+	private static final Relation RELATION = Relation.ALLY;
 
-    private final HCF plugin;
+	private final HCF plugin;
 
-    public FactionAllyArgument(HCF plugin) {
-        super("ally", "Make an ally pact with other factions.", new String[] { "alliance" });
-        this.plugin = plugin;
-    }
+	public FactionAllyArgument(HCF plugin) {
+		super("ally", "Make an ally pact with other factions.", new String[] { "alliance" });
+		this.plugin = plugin;
+	}
 
-    @Override
-    public String getUsage(String label) {
-        return '/' + label + ' ' + getName() + " <factionName>";
-    }
+	@Override
+	public String getUsage(String label) {
+		return '/' + label + ' ' + getName() + " <factionName>";
+	}
 
-    @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player)) {
-            sender.sendMessage(ChatColor.RED + "This command is only executable by players.");
-            return true;
-        }
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+		if (!(sender instanceof Player)) {
+			sender.sendMessage(plugin.getMessagesYML().getString("FACTION-PLAYER-ONLY"));
+			return true;
+		}
 
-        if (ConfigurationService.MAX_ALLIES_PER_FACTION <= 0) {
-            sender.sendMessage(ChatColor.RED + "Allies are disabled this map.");
-            return true;
-        }
+		if (ConfigurationService.MAX_ALLIES_PER_FACTION <= 0) {
+			sender.sendMessage(plugin.getMessagesYML().getString("FACTION-ALLY-DISABLED"));
+			return true;
+		}
 
-        if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Usage: " + getUsage(label));
-            return true;
-        }
+		if (args.length < 2) {
+			sender.sendMessage(ChatColor.RED + "Usage: " + getUsage(label));
+			return true;
+		}
 
-        Player player = (Player) sender;
-        PlayerFaction playerFaction = plugin.getManagerHandler().getFactionManager().getPlayerFaction(player);
+		Player player = (Player) sender;
+		PlayerFaction playerFaction = plugin.getManagerHandler().getFactionManager().getPlayerFaction(player);
 
-        if (playerFaction == null) {
-            sender.sendMessage(ChatColor.RED + "You are not in a faction.");
-            return true;
-        }
+		if (playerFaction == null) {
+			sender.sendMessage(plugin.getMessagesYML().getString("FACTION-PLAYER-NOT-FACTION"));
+			return true;
+		}
 
-        if (playerFaction.getMember(player.getUniqueId()).getRole() == Role.MEMBER) {
-            sender.sendMessage(ChatColor.RED + "You must be an officer to make relation wishes.");
-            return true;
-        }
+		if (playerFaction.getMember(player.getUniqueId()).getRole() == Role.MEMBER) {
+			sender.sendMessage(plugin.getMessagesYML().getString("FACTION-PLAYER-ALLY-MUST-OFFICER"));
+			return true;
+		}
 
-        Faction containingFaction = plugin.getManagerHandler().getFactionManager().getContainingFaction(args[1]);
+		Faction containingFaction = plugin.getManagerHandler().getFactionManager().getContainingFaction(args[1]);
 
-        if (!(containingFaction instanceof PlayerFaction)) {
-            sender.sendMessage(ChatColor.RED + "Player faction named or containing member with IGN or UUID " + args[1] + " not found.");
-            return true;
-        }
+		if (!(containingFaction instanceof PlayerFaction)) {
+			sender.sendMessage(plugin.getMessagesYML().getString("FACTION-PLAYER-NOT-FOUND1").replace("{1}", args[1]));
+			return true;
+		}
 
-        PlayerFaction targetFaction = (PlayerFaction) containingFaction;
+		PlayerFaction targetFaction = (PlayerFaction) containingFaction;
 
-        if (playerFaction == targetFaction) {
-            sender.sendMessage(ChatColor.RED + "You cannot send " + RELATION.getDisplayName() + ChatColor.RED + " requests to your own faction.");
-            return true;
-        }
+		if (playerFaction == targetFaction) {
+			sender.sendMessage(plugin.getMessagesYML().getString("FACTION-ALLY-REQUEST-OWN").replace("{displayName}",
+					RELATION.getDisplayName()));
+			return true;
+		}
 
-        Collection<UUID> allied = playerFaction.getAllied();
+		Collection<UUID> allied = playerFaction.getAllied();
 
-        if (allied.size() >= ConfigurationService.MAX_ALLIES_PER_FACTION) {
-            sender.sendMessage(ChatColor.RED + "Your faction already has reached the alliance limit, which is " + ConfigurationService.MAX_ALLIES_PER_FACTION + '.');
-            return true;
-        }
+		if (allied.size() >= ConfigurationService.MAX_ALLIES_PER_FACTION) {
+			sender.sendMessage(plugin.getMessagesYML().getString("FACTION-ALLY-REACHED").replace("{limit}",
+					String.valueOf(ConfigurationService.MAX_ALLIES_PER_FACTION)));
+			return true;
+		}
 
-        if (targetFaction.getAllied().size() >= ConfigurationService.MAX_ALLIES_PER_FACTION) {
-            sender.sendMessage(targetFaction.getDisplayName(sender) + ChatColor.RED + " has reached their maximum alliance limit, which is " + ConfigurationService.MAX_ALLIES_PER_FACTION + '.');
-            return true;
-        }
+		if (targetFaction.getAllied().size() >= ConfigurationService.MAX_ALLIES_PER_FACTION) {
+			sender.sendMessage(plugin.getMessagesYML().getString("FACTION-ALLY-TARGET-REACHED")
+					.replace("{limit}", String.valueOf(ConfigurationService.MAX_ALLIES_PER_FACTION))
+					.replace("{displayName}", targetFaction.getDisplayName(sender)));
+			return true;
+		}
 
-        if (allied.contains(targetFaction.getUniqueID())) {
-            sender.sendMessage(ChatColor.RED + "Your faction already is " + RELATION.getDisplayName() + 'd' + ChatColor.RED + " with " + targetFaction.getDisplayName(playerFaction) + ChatColor.RED
-                    + '.');
+		if (allied.contains(targetFaction.getUniqueID())) {
+			sender.sendMessage(plugin.getMessagesYML().getString("FACTION-ALLY-TARGET-ALREADY")
+					.replace("{name}", RELATION.getDisplayName())
+					.replace("{displayName}", targetFaction.getDisplayName(playerFaction)));
+			return true;
+		}
 
-            return true;
-        }
+		// Their faction has already requested us, lets' accept.
+		if (targetFaction.getRequestedRelations().remove(playerFaction.getUniqueID()) != null) {
+			FactionRelationCreateEvent event = new FactionRelationCreateEvent(playerFaction, targetFaction, RELATION);
+			Bukkit.getPluginManager().callEvent(event);
 
-        // Their faction has already requested us, lets' accept.
-        if (targetFaction.getRequestedRelations().remove(playerFaction.getUniqueID()) != null) {
-            FactionRelationCreateEvent event = new FactionRelationCreateEvent(playerFaction, targetFaction, RELATION);
-            Bukkit.getPluginManager().callEvent(event);
+			targetFaction.getRelations().put(playerFaction.getUniqueID(), RELATION);
+			targetFaction.broadcast(plugin.getMessagesYML().getString("FACTION-ALLY-REQUEST-ACEPTED")
+					.replace("{relation}", RELATION.getDisplayName())
+					.replace("{displayName}", playerFaction.getDisplayName(targetFaction)));
 
-            targetFaction.getRelations().put(playerFaction.getUniqueID(), RELATION);
-            targetFaction.broadcast(ChatColor.YELLOW + "Your faction is now " + RELATION.getDisplayName() + 'd' + ChatColor.YELLOW + " with " + playerFaction.getDisplayName(targetFaction)
-                    + ChatColor.YELLOW + '.');
+			playerFaction.getRelations().put(targetFaction.getUniqueID(), RELATION);
+			playerFaction.broadcast(plugin.getMessagesYML().getString("FACTION-ALLY-REQUEST-ACEPTED")
+					.replace("{relation}", RELATION.getDisplayName())
+					.replace("{displayName}", targetFaction.getDisplayName(playerFaction)));
+			return true;
+		}
 
-            playerFaction.getRelations().put(targetFaction.getUniqueID(), RELATION);
-            playerFaction.broadcast(ChatColor.YELLOW + "Your faction is now " + RELATION.getDisplayName() + 'd' + ChatColor.YELLOW + " with " + targetFaction.getDisplayName(playerFaction)
-                    + ChatColor.YELLOW + '.');
+		if (playerFaction.getRequestedRelations().putIfAbsent(targetFaction.getUniqueID(), RELATION) != null) {
+			sender.sendMessage(plugin.getMessagesYML().getString("FACTION-ALLY-WISH-INFORM")
+					.replace("{relation", RELATION.getDisplayName())
+					.replace("{displayName}", targetFaction.getDisplayName(playerFaction)));
+			return true;
+		}
 
-            return true;
-        }
+		// Handle the request.
+		playerFaction.broadcast(plugin.getMessagesYML().getString("FACTION-ALLY-WISH-HANDLE")
+				.replace("{target}", playerFaction.getDisplayName(targetFaction))
+				.replace("{allied}", RELATION.getDisplayName()));
+		targetFaction.broadcast(plugin.getMessagesYML().getString("FACTION-ALLY-WISH-GETTING")
+				.replace("{requesting}", playerFaction.getDisplayName(targetFaction))
+				.replace("{name}", playerFaction.getName()));
+		return true;
+	}
 
-        if (playerFaction.getRequestedRelations().putIfAbsent(targetFaction.getUniqueID(), RELATION) != null) {
-            sender.sendMessage(ChatColor.YELLOW + "Your faction has already requested to " + RELATION.getDisplayName() + ChatColor.YELLOW + " with " + targetFaction.getDisplayName(playerFaction)
-                    + ChatColor.YELLOW + '.');
+	@Override
+	public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+		if (args.length != 2 || !(sender instanceof Player)) {
+			return Collections.emptyList();
+		}
 
-            return true;
-        }
+		Player player = (Player) sender;
+		PlayerFaction playerFaction = plugin.getManagerHandler().getFactionManager().getPlayerFaction(player);
+		if (playerFaction == null) {
+			return Collections.emptyList();
+		}
 
-        // Handle the request.
-        playerFaction.broadcast(targetFaction.getDisplayName(playerFaction) + ChatColor.YELLOW + " were informed that you wish to be " + RELATION.getDisplayName() + ChatColor.YELLOW + '.');
-        targetFaction.broadcast(playerFaction.getDisplayName(targetFaction) + ChatColor.YELLOW + " has sent a request to be " + RELATION.getDisplayName() + ChatColor.YELLOW + ". Use "
-                + ConfigurationService.ALLY_COLOUR + "/faction " + getName() + ' ' + playerFaction.getName() + ChatColor.YELLOW + " to accept.");
+		List<String> results = new ArrayList<>();
+		for (Player target : Bukkit.getServer().getOnlinePlayers()) {
+			if (!target.equals(player) && player.canSee(target) && !results.contains(target.getName())) {
+				Faction targetFaction = plugin.getManagerHandler().getFactionManager().getPlayerFaction(target);
+				if (targetFaction != null && playerFaction != targetFaction) {
+					if (playerFaction.getRequestedRelations().get(targetFaction.getUniqueID()) != RELATION
+							&& playerFaction.getRelations().get(targetFaction.getUniqueID()) != RELATION) {
+						results.add(targetFaction.getName());
+					}
+				}
+			}
+		}
 
-        return true;
-    }
-
-    @Override
-    public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        if (args.length != 2 || !(sender instanceof Player)) {
-            return Collections.emptyList();
-        }
-
-        Player player = (Player) sender;
-        PlayerFaction playerFaction = plugin.getManagerHandler().getFactionManager().getPlayerFaction(player);
-        if (playerFaction == null) {
-            return Collections.emptyList();
-        }
-
-        List<String> results = new ArrayList<>();
-        for (Player target : Bukkit.getServer().getOnlinePlayers()) {
-            if (!target.equals(player) && player.canSee(target) && !results.contains(target.getName())) {
-                Faction targetFaction = plugin.getManagerHandler().getFactionManager().getPlayerFaction(target);
-                if (targetFaction != null && playerFaction != targetFaction) {
-                    if (playerFaction.getRequestedRelations().get(targetFaction.getUniqueID()) != RELATION && playerFaction.getRelations().get(targetFaction.getUniqueID()) != RELATION) {
-                        results.add(targetFaction.getName());
-                    }
-                }
-            }
-        }
-
-        return results;
-    }
+		return results;
+	}
 }

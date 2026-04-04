@@ -2,7 +2,8 @@ package me.scifi.hcf.command;
 
 import me.scifi.hcf.HCF;
 import me.scifi.hcf.Utils;
-import me.scifi.hcf.staffmode.Vanish;
+import me.scifi.hcf.features.staffmode.Vanish;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;

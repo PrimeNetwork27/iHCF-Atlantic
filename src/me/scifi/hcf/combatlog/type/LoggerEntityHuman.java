@@ -24,6 +24,7 @@ import net.minecraft.server.v1_8_R3.EnumProtocolDirection;
 import net.minecraft.server.v1_8_R3.MinecraftServer;
 import net.minecraft.server.v1_8_R3.NetworkManager;
 import net.minecraft.server.v1_8_R3.Packet;
+import net.minecraft.server.v1_8_R3.PacketPlayOutNamedEntitySpawn;
 import net.minecraft.server.v1_8_R3.PacketPlayOutPlayerInfo;
 import net.minecraft.server.v1_8_R3.PacketPlayOutPlayerInfo.EnumPlayerInfoAction;
 import net.minecraft.server.v1_8_R3.PlayerConnection;
@@ -39,6 +40,7 @@ public class LoggerEntityHuman extends EntityPlayer implements LoggerEntity {
 
 	public LoggerEntityHuman(Player player, World world) {
 		this(player, ((CraftWorld) world).getHandle());
+
 	}
 
 	private LoggerEntityHuman(Player player, WorldServer world) {
@@ -57,23 +59,33 @@ public class LoggerEntityHuman extends EntityPlayer implements LoggerEntity {
 		lastDamager = originPlayer.lastDamager;
 		invulnerableTicks = originPlayer.invulnerableTicks;
 		combatTracker = originPlayer.combatTracker;
+
+		PacketPlayOutPlayerInfo addInfo = new PacketPlayOutPlayerInfo(
+				PacketPlayOutPlayerInfo.EnumPlayerInfoAction.ADD_PLAYER, this);
+		PacketPlayOutNamedEntitySpawn spawn = new PacketPlayOutNamedEntitySpawn(this); // We need to send this packets
+																						// to the players see our
+																						// entity.
+
+		for (Player online : Bukkit.getOnlinePlayers()) {
+			EntityPlayer ep = ((CraftPlayer) online).getHandle();
+			ep.playerConnection.sendPacket(addInfo);
+			ep.playerConnection.sendPacket(spawn);
+		}
 	}
 
 	@Override
-	protected boolean d(final DamageSource source, float amount) {
+	public boolean damageEntity(final DamageSource source, float amount) {
 		if (!dead) {
-			boolean flag = super.d(source, amount);
-			if (!flag || dead || getHealth() <= 0.0F) { // super call already killed player
-				return flag;
+			boolean flag = super.damageEntity(source, amount);
+
+			// Let die naturally to not duplicate the death.
+			if (flag && getHealth() <= 0.0F) {
+				setHealth(0.0F);
+				MinecraftServer.getServer().getPlayerList().playerFileData.save(this);
 			}
 
-			super.die(source);
-			dead = true;
-			setHealth(0.0F);
-			MinecraftServer.getServer().getPlayerList().playerFileData.save(this);
-			return true;
+			return flag;
 		}
-
 		return false;
 	}
 
@@ -122,7 +134,7 @@ public class LoggerEntityHuman extends EntityPlayer implements LoggerEntity {
 	private static class FakeNetworkManager extends NetworkManager {
 
 		public FakeNetworkManager() {
-			super(EnumProtocolDirection.SERVERBOUND); // TODO: Think this is false on 1.7.10
+			super(EnumProtocolDirection.SERVERBOUND);
 		}
 
 	}

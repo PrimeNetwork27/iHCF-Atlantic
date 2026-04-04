@@ -42,7 +42,7 @@ public class FactionShowArgument extends CommandArgument {
 			namedFaction = plugin.getManagerHandler().getFactionManager().getPlayerFaction((Player) sender);
 
 			if (namedFaction == null) {
-				sender.sendMessage(ChatColor.RED + "You are not in a faction.");
+				sender.sendMessage(plugin.getMessagesYML().getString("FACTION-PLAYER-NOT-FACTION"));
 				return true;
 			}
 		} else {
@@ -50,8 +50,8 @@ public class FactionShowArgument extends CommandArgument {
 			playerFaction = plugin.getManagerHandler().getFactionManager().getContainingPlayerFaction(args[1]);
 
 			if (namedFaction == null && playerFaction == null) {
-				sender.sendMessage(ChatColor.RED + "Faction named or containing member with IGN or UUID " + args[1]
-						+ " not found.");
+				sender.sendMessage(
+						plugin.getMessagesYML().getString("FACTION-PLAYER-NOT-FOUND").replace("{1}", args[1]));
 				return true;
 			}
 		}

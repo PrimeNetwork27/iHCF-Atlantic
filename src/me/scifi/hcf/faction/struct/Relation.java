@@ -1,70 +1,79 @@
 package me.scifi.hcf.faction.struct;
 
-import com.doctordark.util.BukkitUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.DyeColor;
+
+import com.doctordark.util.BukkitUtils;
+
 import me.scifi.hcf.ConfigurationService;
 import me.scifi.hcf.faction.type.Faction;
 
 /**
- * Represents a relation between {@link Faction}s and {@link org.bukkit.entity.Player}s.
+ * Represents a relation between {@link Faction}s and
+ * {@link org.bukkit.entity.Player}s.
  */
 public enum Relation {
 
-    MEMBER(3), ALLY(2), ENEMY(1);
+	FOCUS(4), MEMBER(3), ALLY(2), ENEMY(1);
 
-    private final int value;
+	private final int value;
 
-    Relation(final int value) {
-        this.value = value;
-    }
+	Relation(final int value) {
+		this.value = value;
+	}
 
-    public int getValue() {
-        return value;
-    }
+	public int getValue() {
+		return value;
+	}
 
-    public boolean isAtLeast(Relation relation) {
-        return this.value >= relation.value;
-    }
+	public boolean isAtLeast(Relation relation) {
+		return this.value >= relation.value;
+	}
 
-    public boolean isAtMost(Relation relation) {
-        return this.value <= relation.value;
-    }
+	public boolean isAtMost(Relation relation) {
+		return this.value <= relation.value;
+	}
 
-    public boolean isMember() {
-        return this == MEMBER;
-    }
+	public boolean isFocus() {
+		return this == FOCUS;
+	}
 
-    public boolean isAlly() {
-        return this == ALLY;
-    }
+	public boolean isMember() {
+		return this == MEMBER;
+	}
 
-    public boolean isEnemy() {
-        return this == ENEMY;
-    }
+	public boolean isAlly() {
+		return this == ALLY;
+	}
 
-    public String getDisplayName() {
-        switch (this) {
-        case ALLY:
-            return toChatColour() + "alliance";
-        default:
-            return toChatColour() + name().toLowerCase();
-        }
-    }
+	public boolean isEnemy() {
+		return this == ENEMY;
+	}
 
-    public ChatColor toChatColour() {
-        switch (this) {
-        case MEMBER:
-            return ConfigurationService.TEAMMATE_COLOUR;
-        case ALLY:
-            return ConfigurationService.ALLY_COLOUR;
-        case ENEMY:
-        default:
-            return ConfigurationService.ENEMY_COLOUR;
-        }
-    }
+	public String getDisplayName() {
+		switch (this) {
+		case ALLY:
+			return toChatColour() + "alliance";
+		default:
+			return toChatColour() + name().toLowerCase();
+		}
+	}
 
-    public DyeColor toDyeColour() {
-        return BukkitUtils.toDyeColor(toChatColour());
-    }
+	public ChatColor toChatColour() {
+		switch (this) {
+		case MEMBER:
+			return ConfigurationService.TEAMMATE_COLOUR;
+		case ALLY:
+			return ConfigurationService.ALLY_COLOUR;
+		case FOCUS:
+			return ChatColor.LIGHT_PURPLE;
+		case ENEMY:
+		default:
+			return ConfigurationService.ENEMY_COLOUR;
+		}
+	}
+
+	public DyeColor toDyeColour() {
+		return BukkitUtils.toDyeColor(toChatColour());
+	}
 }

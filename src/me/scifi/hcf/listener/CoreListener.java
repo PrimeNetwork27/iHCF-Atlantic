@@ -14,7 +14,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.inventory.ItemStack;
@@ -69,14 +68,6 @@ public class CoreListener implements Listener {
 		}
 
 		e.setCancelled(true);
-	}
-
-	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent event) {
-		if (event.getPlayer().hasPlayedBefore()) {
-			plugin.getManagerHandler().getEconomyManager().addBalance(event.getPlayer().getUniqueId(), 500);
-		}
-
 	}
 
 	@EventHandler(priority = EventPriority.HIGHEST)
