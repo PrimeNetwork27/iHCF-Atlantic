@@ -6,45 +6,71 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bukkit.Material;
-import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import com.doctordark.util.menu.Button;
 import com.doctordark.util.menu.IMenu;
-import com.doctordark.util.menu.InventoryUtil;
 import com.doctordark.util.menu.anottation.Slot;
 
 import lombok.Getter;
 import me.scifi.hcf.HCF;
 
 @Getter
-public abstract class PaginatedMenu implements IMenu {
+public abstract class Menu implements IMenu {
 	protected HCF plugin;
-	private int page;
 	public final Inventory inventory;
 	private final Map<Button, Slot> registeredButtons = new HashMap<>();
 	private final Map<Integer, Button> registeredButtonPositions = new HashMap<>();
 
-	public PaginatedMenu(int size, int page) {
+	public Menu(int size, String title) {
 		plugin = HCF.getPlugin();
-		this.page = page;
-		inventory = plugin.getServer().createInventory(this, size,
-				getTitle().length() > 32 ? getTitle().substring(0, 32) : getTitle());
-		populate();
-		updateContents();
+		inventory = plugin.getServer().createInventory(this, size, title);
 	}
-
-	public abstract int getTotalPages();
-
-	public abstract void updateContents();
 
 	public void displayTo(Player player) {
 		populate();
 		player.openInventory(inventory);
+	}
+
+	public ItemStack getItemAt(int slot) {
+		ItemStack existing = inventory.getItem(slot);
+		if (existing != null && existing.getType() != Material.AIR) {
+			return existing;
+		}
+		ItemStack fill = getFillMaterial();
+		return fill != null ? fill : null;
+	}
+
+	@Override
+	public ItemStack getFillMaterial() {
+		return null;
+	}
+
+	public void setItem(ItemStack stack, int slot) {
+		inventory.setItem(slot, stack);
+	}
+
+	@Override
+	public void onInventoryClick(InventoryClickEvent event) {
+		event.setCancelled(true);
+		if (!(event.getWhoClicked() instanceof Player)) {
+			return;
+		}
+		if (event.getClickedInventory() == null) {
+			return;
+		}
+		if (!event.getClickedInventory().equals(inventory)) {
+			return;
+		}
+
+		Player player = (Player) event.getWhoClicked();
+		Button button = registeredButtonPositions.get(event.getSlot());
+		if (button != null) {
+			button.getAction().accept(player);
+		}
 	}
 
 	public void registerButton(Button button, int slot) {
@@ -104,64 +130,4 @@ public abstract class PaginatedMenu implements IMenu {
 		}
 	}
 
-	public ItemStack getItemAt(int slot) {
-		ItemStack existing = inventory.getItem(slot);
-		if (existing != null && existing.getType() != Material.AIR) {
-			return existing;
-		}
-		ItemStack fill = getFillMaterial();
-		return fill != null ? fill : null;
-	}
-
-	@Override
-	public ItemStack getFillMaterial() {
-		return null;
-	}
-
-	public void setPage(int page) {
-		if (page < 0) {
-			page = 0;
-		}
-		if (page >= getTotalPages()) {
-			page = getTotalPages() - 1;
-		}
-		this.page = page;
-		for (HumanEntity viewer : inventory.getViewers()) {
-			InventoryUtil.changeTitle((Player) viewer, getTitle());
-		}
-		updateContents();
-	}
-
-	@Override
-	public void open(Player player) {
-		player.openInventory(getInventory());
-		setPage(getPage());
-	}
-
-	@Override
-	public void onInventoryClick(InventoryClickEvent event) {
-		event.setCancelled(true);
-		if (!(event.getWhoClicked() instanceof Player)) {
-			return;
-		}
-		if (event.getClickedInventory() == null) {
-			return;
-		}
-		if (!event.getClickedInventory().equals(inventory)) {
-			return;
-		}
-
-		Player player = (Player) event.getWhoClicked();
-		Button button = registeredButtonPositions.get(event.getSlot());
-		if (button != null) {
-			button.getAction().accept(player);
-		}
-	}
-
-	@Override
-	public void onInventoryDrag(InventoryDragEvent event) {
-		if (event.getView().getTopInventory().equals(inventory)) {
-			event.setCancelled(true);
-		}
-	}
 }
